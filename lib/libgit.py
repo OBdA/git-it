@@ -38,9 +38,6 @@ def tree(branch, recursive = False):
         objs.append((mode, type, sha, file))
     return objs
 
-def full_tree(branch):
-    return tree(branch, True)
-
 def cat_file(sha):
     return command_lines('cat-file', [ '-p', sha ])
 
@@ -93,4 +90,4 @@ def has_uncommitted_changes():
     return exitcode != 0
 
 if __name__ == '__main__':
-    print full_tree(current_branch())
+    print tree(current_branch(), recursive=True)
