@@ -1,6 +1,6 @@
 import sys, os, re
 import datetime
-import misc, repo, log, ticket, colors, git, it
+import misc, repo, log, ticket, colors, libgit as git, it
 
 # Backward-compatible import of SHA1 en MD5 hash algoritms
 try:
