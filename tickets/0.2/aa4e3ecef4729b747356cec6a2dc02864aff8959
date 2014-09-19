@@ -7,3 +7,4 @@ Weight: 3
 Status: open
 Assigned to: -
 
+git rev-parse --show-toplevel
