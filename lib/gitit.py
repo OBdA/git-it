@@ -74,14 +74,23 @@ class Gitit:
     def __init__(self):
         pass
     
-    def itdb_exists(self):
-        if git.branch_exists(it.ITDB_BRANCH):
-            ls = git.tree(it.ITDB_BRANCH, recursive=True)
-            abs_hold_file = os.path.join(it.TICKET_DIR, it.HOLD_FILE)
-            for _, _, _, file in ls:
-                if file == abs_hold_file:
-                    return True
+    def itdb_exists(self, with_remotes=False):
+        if with_remotes:
+            branches = [it.ITDB_BRANCH, 'remotes/origin/' + it.ITDB_BRANCH, None]
+        else:
+            branches = [it.ITDB_BRANCH, None]
+
+        for branch in branches:
+            if git.branch_exists(branch): break
+        if branch == None:
             return False
+
+        ls = git.tree(branch, recursive=True)
+        abs_hold_file = os.path.join(it.TICKET_DIR, it.HOLD_FILE)
+        for _, _, _, file in ls:
+            if file == abs_hold_file:
+                return branch
+        return False
     
     def require_itdb(self):
         """
@@ -93,11 +102,10 @@ class Gitit:
             sys.exit(1)
     
     def init(self):
-        if self.itdb_exists():
-            print 'Already initialized issue database in branch \'%s\'.' % \
-                                                                                                                         it.ITDB_BRANCH
+        branch = self.itdb_exists(with_remotes=True)
+        if branch:
+            print 'Already initialized issue database in branch \'%s\'.' % branch
             return
-        
         # else, initialize the new .it database alongside the .git repo
         gitrepo = repo.find_git_repo()
         if not gitrepo:
