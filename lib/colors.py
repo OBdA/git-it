@@ -1,3 +1,4 @@
+#vim: syntax=python fileencoding=utf-8 tabstop=4 expandtab shiftwidth=4
 
 colors = { 'default' : '\x1b[01;0m',
            'red' : '\x1b[01;101m',
