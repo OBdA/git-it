@@ -76,7 +76,7 @@ class Gitit:
     
     def itdb_exists(self):
         if git.branch_exists(it.ITDB_BRANCH):
-            ls = git.full_tree(it.ITDB_BRANCH)
+            ls = git.tree(it.ITDB_BRANCH, recursive=True)
             abs_hold_file = os.path.join(it.TICKET_DIR, it.HOLD_FILE)
             for _, _, _, file in ls:
                 if file == abs_hold_file:
@@ -127,7 +127,7 @@ class Gitit:
     
     def match_or_error(self, sha):
         self.require_itdb()
-        files = git.full_tree(it.ITDB_BRANCH + ':' + it.TICKET_DIR)
+        files = git.tree(it.ITDB_BRANCH + ':' + it.TICKET_DIR, recursive=True)
         matches = []
         for _, _, _, path in files:
             _, file = os.path.split(path)
