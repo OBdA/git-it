@@ -3,6 +3,7 @@ Issuer: Vincent Driessen <vincent@datafox.nl>
 Date: 2010-03-14 08:54:22
 Type: feature
 Priority: 2
-Status: open
+Weight: 3
+Status: closed
 Assigned to: Olaf Ohlenmacher
 
