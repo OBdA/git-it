@@ -1,4 +1,4 @@
-Subject: Parse options given to subcommands with getopt
+Subject: Parse subcommands and theirt options with argparse
 Issuer: Vincent Driessen <vincent@datafox.nl>
 Date: 2009-05-25 09:47:28
 Type: issue
