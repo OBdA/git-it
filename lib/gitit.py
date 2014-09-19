@@ -102,29 +102,30 @@ class Gitit:
         gitrepo = repo.find_git_repo()
         if not gitrepo:
             log.printerr('Not a valid Git repository.')
-        else:
-            parent, _ = os.path.split(gitrepo)
-            ticket_dir = os.path.join(parent, it.TICKET_DIR)
-            hold_file = os.path.join(ticket_dir, it.HOLD_FILE)
-            misc.mkdirs(ticket_dir)
-            misc.write_file_contents(hold_file, \
-                         'This is merely a placeholder file for git-it that prevents ' + \
-                         'this directory from\nbeing pruned by Git.')
-            
-            # Commit the new itdb to the repo
-            curr_branch = git.current_branch()
-            git.change_head_branch('git-it')
-            git.command_lines('add', [hold_file])
-            msg = 'Initialized empty ticket database.'
-            git.command_lines('commit', ['-m', msg, hold_file])
-            os.remove(hold_file)
-            os.rmdir(ticket_dir)
-            git.change_head_branch(curr_branch)
-            abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
-            git.command_lines('reset', ['HEAD', abs_ticket_dir])
-            misc.rmdirs(abs_ticket_dir)
-            print 'Initialized empty ticket database.'
-    
+            return
+
+        parent, _ = os.path.split(gitrepo)
+        ticket_dir = os.path.join(parent, it.TICKET_DIR)
+        hold_file = os.path.join(ticket_dir, it.HOLD_FILE)
+        misc.mkdirs(ticket_dir)
+        misc.write_file_contents(hold_file, \
+                     'This is merely a placeholder file for git-it that prevents ' + \
+                     'this directory from\nbeing pruned by Git.')
+
+        # Commit the new itdb to the repo
+        curr_branch = git.current_branch()
+        git.change_head_branch('git-it')
+        git.command_lines('add', [hold_file])
+        msg = 'Initialized empty ticket database.'
+        git.command_lines('commit', ['-m', msg, hold_file])
+        os.remove(hold_file)
+        os.rmdir(ticket_dir)
+        git.change_head_branch(curr_branch)
+        abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
+        git.command_lines('reset', ['HEAD', abs_ticket_dir])
+        misc.rmdirs(abs_ticket_dir)
+        print 'Initialized empty ticket database.'
+
     def match_or_error(self, sha):
         self.require_itdb()
         files = git.tree(it.ITDB_BRANCH + ':' + it.TICKET_DIR, recursive=True)
