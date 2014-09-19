@@ -1,4 +1,4 @@
-Subject: When running "it init", also detect already-existing remote branches named <remote>/origin
+Subject: When running "it init", also detect already-existing remote git-it branches
 Issuer: Vincent Driessen <vincent@datafox.nl>
 Date: 2010-03-11 22:44:41
 Type: issue
