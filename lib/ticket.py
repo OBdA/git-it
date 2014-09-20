@@ -67,20 +67,24 @@ def create_interactive():
     )
     i.type = type_dict[type_string]
 
-    prio_string = ask_for_pattern('Priority [(1)high, (2)medium, (3)low]: ', lambda x: x.strip() in '123')
-    if prio_string == '':
-        i.prio = 2
-    else:
-        i.prio = int(prio_string)
+    prio_string = ask_for_pattern(
+            'Priority [(1)high, (2)medium, (3)low]: ',
+            lambda x: x.strip() in '123',
+            default='2'
+    )
+    i.prio = int(prio_string)
+
     i.weight = int(ask_for_pattern(
         'Weight [1-27] (1=small, 3=minor, 9=major, 27=super): ',
         lambda x: is_int(x) and 1 <= int(x) <= 27,
         default='3'
     ))
-    i.release = ask_for_pattern('Release: ').strip()
-    if i.release == '':
-        i.release = 'uncategorized'
+
+    i.release = ask_for_pattern('Release: ', default='uncategorized')
+
+    #FIXME: add ticket description as body
     #i.body = ask_for_multiline_pattern('Describe the ticket:\n')
+
     i.status = 'open'
     i.date = datetime.datetime.now()
     i.issuer = '%s <%s>' % (fullname, email)
