@@ -1,9 +1,14 @@
 Subject: Release can not be edited
 Issuer: Olaf Ohlenmacher <olf@obda.de>
 Date: 2014-09-20 22:49:07
-Type: bug
+Type: feature
 Priority: 2
-Weight: 3
+Weight: 6
 Status: open
 Assigned to: Olaf Ohlenmacher
 
+Directory structure ist in branch 'git-it':
+
+	./tickets/<release>/<hashkey>
+
+Implement new subcommand 'move' to assign ticket to another release.
