@@ -11,6 +11,8 @@ sys.path += [ os.path.abspath(sys.path[0] + '/..') + '/lib' ]
 import gitit
 import log
 
+__version__ = 0.1
+
 def usage():
     print 'usage: it <subcommand> [<options>]'
     print ''
@@ -41,7 +43,7 @@ def usage():
 opts = []
 params = []
 try:
-    shorts = 'h'
+    shorts = 'hv'
     longs  = [ ]
     opts, params = getopt.getopt(sys.argv[1:], shorts, longs)
 except getopt.GetoptError, e:
@@ -53,6 +55,9 @@ except getopt.GetoptError, e:
 for key, val in opts:
     if key in [ '-h' ]:
         usage()
+        sys.exit(0)
+    if key in [ '-v' ]:
+        print('git-it %s' % __version__)
         sys.exit(0)
 
 # No subcommand?
