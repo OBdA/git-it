@@ -60,7 +60,11 @@ def create_interactive():
     i.title = ask_for_pattern('Title: ', not_empty)
 
     type_dict = { 'i': 'issue', 't': 'task', 'f': 'feature', 'b': 'bug' }
-    type_string = ask_for_pattern('Type [(b)ug, (f)eature, (i)ssue, (t)ask]: ', lambda x: not_empty(x) and x.strip() in 'bfit')
+    type_string = ask_for_pattern(
+            'Type [(b)ug, (f)eature, (i)ssue, (t)ask]: ',
+            lambda x: not_empty(x) and x.strip() in 'bfit',
+            default = 'i'
+    )
     i.type = type_dict[type_string]
 
     prio_string = ask_for_pattern('Priority [(1)high, (2)medium, (3)low]: ', lambda x: x.strip() in '123')
