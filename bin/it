@@ -11,7 +11,7 @@ sys.path += [ os.path.abspath(sys.path[0] + '/..') + '/lib' ]
 import gitit
 import log
 
-__version__ = 0.1
+__version__ = '0.1.1'
 
 def usage():
     print 'usage: it <subcommand> [<options>]'
