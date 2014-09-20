@@ -1,7 +1,7 @@
 #
 # Make file for the git-it project
 #
-prefix=/usr/local/git-it
+prefix ?= /usr/local
 
 BIN_DIR=$(prefix)/bin
 LIB_DIR=$(prefix)/lib

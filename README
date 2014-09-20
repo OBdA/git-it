@@ -39,5 +39,14 @@ Then, typical workflow with git-it is:
 - Finally, push out all of your changes to the central repo:
 	git push
 
+
+Installation
+============
+
+Run 'make install' to install git-it into /usr/local. Run
+'prefix=/another/path make install' to install git-it to
+'/another/path'.
+
+
 Authors:
 Vincent Driessen <vincent@datafox.nl>
