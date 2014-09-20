@@ -1,9 +1,9 @@
-Subject: Parse subcommands and their options with argparse
+Subject: Use argparse to parse subcommands and their options
 Issuer: Vincent Driessen <vincent@datafox.nl>
 Date: 2009-05-25 09:47:28
-Type: issue
+Type: task
 Priority: 2
-Weight: 3
+Weight: 6
 Status: open
 Assigned to: -
 
