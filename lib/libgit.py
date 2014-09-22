@@ -11,19 +11,19 @@ def quote_string(s):
     s = s.replace('\"', '\\\"')
     return '\"%s\"' % s
 
-def tree(branch, recursive = False):
-    opts = []
-    if recursive:
-        opts.append('-r')
-    opts.append(branch)
-    # apparently, ls-tree MUST be executed from the top-most working tree level
-    raws = command_lines('ls-tree', opts, from_root=False, explicit_git_dir=True)
-    objs = []
-    for line in raws:
-        meta, file = line.split('\t', 1)
-        mode, type, sha = meta.split(' ', 2)
-        objs.append((mode, type, sha, file))
+
+def tree(branch, recursive = False, root = None):
+    # initialize tree
+    if not tree:
+        root = Repo().heads[branch].commit.tree
+    if not root:
+        return []
+    objs = [(x.mode, x.type, x.hexsha, x.path) for x in root.blobs]
+    if recursive and root.trees:
+        for t in root.trees:
+            objs.extend(tree(branch, recursive=True, root=t))
     return objs
+
 
 def cat_file(sha):
     return command_lines('cat-file', [ '-p', sha ])
