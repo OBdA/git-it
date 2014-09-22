@@ -5,24 +5,11 @@
 #
 import os
 import repo
+from git import *
 
 def quote_string(s):
     s = s.replace('\"', '\\\"')
     return '\"%s\"' % s
-
-def current_branch():
-    return filter(lambda x: x[1], all_branches())[0][0]
-
-def all_branches():
-    branches = command_lines('branch', ['-a'])
-    arr = []
-    for b in branches:
-        current = b[0:2] == '* '
-        arr.append((b[2:], current))
-    return arr
-
-def branch_exists(branch):
-    return branch in map(lambda x: x[0], all_branches())
 
 def tree(branch, recursive = False):
     opts = []
@@ -90,4 +77,4 @@ def has_uncommitted_changes():
     return exitcode != 0
 
 if __name__ == '__main__':
-    print tree(current_branch(), recursive=True)
+    print tree(Repo().active_branch.name, recursive=True)

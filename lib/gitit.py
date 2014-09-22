@@ -4,6 +4,8 @@ import sys, os, re
 import datetime
 import misc, repo, log, ticket, colors, libgit as git, it
 
+from git import *
+
 # Backward-compatible import of SHA1 en MD5 hash algoritms
 try:
     import hashlib
@@ -81,7 +83,7 @@ class Gitit:
             branches = [it.ITDB_BRANCH, None]
 
         for branch in branches:
-            if git.branch_exists(branch): break
+            if branch in [b.name for b in Repo().branches]: break
         if branch == None:
             return False
 
@@ -121,7 +123,7 @@ class Gitit:
                      'this directory from\nbeing pruned by Git.')
 
         # Commit the new itdb to the repo
-        curr_branch = git.current_branch()
+        curr_branch = Repo().active_branch.name
         git.change_head_branch('git-it')
         git.command_lines('add', [hold_file])
         msg = 'Initialized empty ticket database.'
@@ -177,7 +179,7 @@ class Gitit:
 
                 # Now, when the edit has succesfully taken place, switch branches, commit,
                 # and switch back
-                curr_branch = git.current_branch()
+                curr_branch = Repo().active_branch.name
                 git.change_head_branch('git-it')
                 msg = 'ticket \'%s\' edited' % sha7
                 i.save()
@@ -214,7 +216,7 @@ class Gitit:
         # Try to move the file into it
         try:
             # Commit the new itdb to the repo
-            curr_branch = git.current_branch()
+            curr_branch = Repo().active_branch.name
             git.change_head_branch('git-it')
 
             i.save(target_path)
@@ -249,7 +251,7 @@ class Gitit:
             sys.exit(1)
 
         # now we may sync the git-it branch safely!
-        curr = git.current_branch()
+        curr = Repo().active_branch.name
         os.system('git checkout git-it')
         os.system('git pull')
         os.system('git checkout \'%s\'' % curr)
@@ -279,7 +281,7 @@ class Gitit:
         print 'new ticket \'%s\' saved' % sha7
 
         # Commit the new ticket to the 'aaa' branch
-        curr_branch = git.current_branch()
+        curr_branch = Repo().active_branch.name
         git.change_head_branch('git-it')
         git.command_lines('add', [i.filename()])
         msg = '%s added ticket \'%s\'' % (i.issuer, sha7)
@@ -415,7 +417,7 @@ class Gitit:
         sha7 = misc.chop(basename, 7)
 
         # Commit the new itdb to the repo
-        curr_branch = git.current_branch()
+        curr_branch = Repo().active_branch.name
         git.change_head_branch('git-it')
         msg = 'removed ticket \'%s\'' % sha7
         git.command_lines('commit', ['-m', msg, match], from_root=True)
@@ -443,7 +445,7 @@ class Gitit:
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
-        curr_branch = git.current_branch()
+        curr_branch = Repo().active_branch.name
         git.change_head_branch('git-it')
         i.status = new_status
         msg = '%s ticket \'%s\'' % (i.status, sha7)
@@ -464,7 +466,7 @@ class Gitit:
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
-        curr_branch = git.current_branch()
+        curr_branch = Repo().active_branch.name
         git.change_head_branch('git-it')
         msg = 'ticket \'%s\' reopened' % sha7
         i.status = 'open'
@@ -480,7 +482,7 @@ class Gitit:
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(sha, 7)
 
-        curr_branch = git.current_branch()
+        curr_branch = Repo().active_branch.name
         git.change_head_branch('git-it')
         fullname = os.popen('git config user.name').read().strip()
         msg = 'ticket \'%s\' taken by %s' % (sha7, fullname)
@@ -497,7 +499,7 @@ class Gitit:
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(sha, 7)
 
-        curr_branch = git.current_branch()
+        curr_branch = Repo().active_branch.name
         git.change_head_branch('git-it')
         msg = 'ticket \'%s\' left alone' % sha7
         i.assigned_to = '-'
