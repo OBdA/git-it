@@ -62,9 +62,9 @@ def versionCmp(strx, stry):
 def cmp_by_release_dir(dir1, dir2):
     _, _, _, title1 = dir1
     _, _, _, title2 = dir2
-    if title1 == 'uncategorized':
+    if title1 ==  it.UNCATEGORIZED:
         return -1
-    elif title2 == 'uncategorized':
+    elif title2 == it.UNCATEGORIZED:
         return 1
     else:
         return -versionCmp(title1, title2)
