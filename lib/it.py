@@ -5,6 +5,8 @@ import os
 ITDB_BRANCH    = 'git-it'
 TICKET_DIR     = 'tickets'
 HOLD_FILE      = '.hold'
-UNCATEGORIZED  = 'uncategorized'
+
+# release/category string used for not categorized issues
+UNCATEGORIZED  = 'none'
 
 EDIT_TMP_FILE  = '.it-edit.tmp'
