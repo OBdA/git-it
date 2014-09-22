@@ -80,7 +80,7 @@ def create_interactive():
         default='3'
     ))
 
-    i.release = ask_for_pattern('Release: ', default='uncategorized')
+    i.release = ask_for_pattern('Release: ', default=it.UNCATEGORIZED)
 
     #FIXME: add ticket description as body
     #i.body = ask_for_multiline_pattern('Describe the ticket:\n')
@@ -202,7 +202,7 @@ class Ticket:
         self.status = 'open'
         self.assigned_to = '-'
         self.weight = 3  # the weight of 'minor' by default
-        self.release = 'uncategorized'
+        self.release = it.UNCATEGORIZED
 
     def is_mine(self):
         fullname = os.popen('git config user.name').read().strip()
