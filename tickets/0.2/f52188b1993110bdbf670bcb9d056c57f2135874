@@ -10,5 +10,5 @@ Assigned to: Olaf Ohlenmacher
 Status
 ======
 
-+ error in command 'show'
-  error in get_ticket() -> match_or_error(sha)
++ error in match_or_error(sha)
+  returns 'tickets/tickets/0.2/f52...'
