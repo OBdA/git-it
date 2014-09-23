@@ -1,0 +1,9 @@
+Subject: move config from lib/it.py into config file (configParser)
+Issuer: Olaf Ohlenmacher <olf@obda.de>
+Date: 2014-09-23 22:43:43
+Type: feature
+Priority: 3
+Weight: 8
+Status: open
+Assigned to: -
+
