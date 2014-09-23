@@ -125,7 +125,7 @@ class Gitit:
 
         # Commit the new itdb to the repo
         curr_branch = Repo().active_branch.name
-        git.change_head_branch('git-it')
+        git.change_head_branch(it.ITDB_BRANCH)
         git.command_lines('add', [hold_file])
         msg = 'Initialized empty ticket database.'
         git.command_lines('commit', ['-m', msg, hold_file])
@@ -184,7 +184,7 @@ class Gitit:
                 # Now, when the edit has succesfully taken place, switch branches, commit,
                 # and switch back
                 curr_branch = Repo().active_branch.name
-                git.change_head_branch('git-it')
+                git.change_head_branch(it.ITDB_BRANCH)
                 msg = 'ticket \'%s\' edited' % sha7
                 i.save()
                 git.command_lines('commit', ['-m', msg, i.filename()])
@@ -221,7 +221,7 @@ class Gitit:
         try:
             # Commit the new itdb to the repo
             curr_branch = Repo().active_branch.name
-            git.change_head_branch('git-it')
+            git.change_head_branch(it.ITDB_BRANCH)
 
             i.save(target_path)
             if os.path.isfile(src_path):
@@ -286,7 +286,7 @@ class Gitit:
 
         # Commit the new ticket to the 'aaa' branch
         curr_branch = Repo().active_branch.name
-        git.change_head_branch('git-it')
+        git.change_head_branch(it.ITDB_BRANCH)
         git.command_lines('add', [i.filename()])
         msg = '%s added ticket \'%s\'' % (i.issuer, sha7)
         git.command_lines('commit', ['-m', msg, i.filename()])
@@ -430,7 +430,7 @@ class Gitit:
 
         # Commit the new itdb to the repo
         curr_branch = Repo().active_branch.name
-        git.change_head_branch('git-it')
+        git.change_head_branch(it.ITDB_BRANCH)
         msg = 'removed ticket \'%s\'' % sha7
         git.command_lines('commit', ['-m', msg, match], from_root=True)
         git.change_head_branch(curr_branch)
@@ -458,7 +458,7 @@ class Gitit:
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
         curr_branch = Repo().active_branch.name
-        git.change_head_branch('git-it')
+        git.change_head_branch(it.ITDB_BRANCH)
         i.status = new_status
         msg = '%s ticket \'%s\'' % (i.status, sha7)
         i.save()
@@ -479,7 +479,7 @@ class Gitit:
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
         curr_branch = Repo().active_branch.name
-        git.change_head_branch('git-it')
+        git.change_head_branch(it.ITDB_BRANCH)
         msg = 'ticket \'%s\' reopened' % sha7
         i.status = 'open'
         i.save()
@@ -495,7 +495,7 @@ class Gitit:
         sha7 = misc.chop(sha, 7)
 
         curr_branch = Repo().active_branch.name
-        git.change_head_branch('git-it')
+        git.change_head_branch(it.ITDB_BRANCH)
         fullname = os.popen('git config user.name').read().strip()
         msg = 'ticket \'%s\' taken by %s' % (sha7, fullname)
         i.assigned_to = fullname
@@ -512,7 +512,7 @@ class Gitit:
         sha7 = misc.chop(sha, 7)
 
         curr_branch = Repo().active_branch.name
-        git.change_head_branch('git-it')
+        git.change_head_branch(it.ITDB_BRANCH)
         msg = 'ticket \'%s\' left alone' % sha7
         i.assigned_to = '-'
         i.save()
