@@ -83,7 +83,8 @@ class Gitit:
             branches = [it.ITDB_BRANCH, None]
 
         for branch in branches:
-            if branch in [b.name for b in Repo().branches]: break
+            if branch in [b.name for b in Repo().branches]:
+                break
         if branch == None:
             return False
 
@@ -138,7 +139,10 @@ class Gitit:
 
     def match_or_error(self, sha):
         self.require_itdb()
-        files = git.tree(it.ITDB_BRANCH + ':' + it.TICKET_DIR, recursive=True)
+        # search files from ITDB_BRANCH:TICKET_DIR
+        base_tree = Repo().heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
+        files = git.tree(recursive=True, root=base_tree)
+
         matches = []
         for _, _, _, path in files:
             _, file = os.path.split(path)
@@ -369,8 +373,12 @@ class Gitit:
     
     def list(self, show_types = ['open', 'test'], releases_filter = []):
         self.require_itdb()
-        releasedirs = filter(lambda x: x[1] == 'tree', git.tree(it.ITDB_BRANCH + \
-                                                                                                                 ':' + it.TICKET_DIR))
+        base_tree = Repo().heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
+        releasedirs = [(x.mode, x.type, x.hexsha, x.name) for x in base_tree.trees]
+#        releasedirs = filter(
+#                lambda x: x[1] == 'tree',
+#                git.tree(root=base_tree)
+#        )
 
         # Filter releases
         if releases_filter:
@@ -392,12 +400,16 @@ class Gitit:
         print_count = 0
         releasedirs.sort(cmp_by_release_dir)
         for _, _, sha, rel in releasedirs:
-            reldir = os.path.join(it.TICKET_DIR, rel)
-            ticketfiles = git.tree(it.ITDB_BRANCH + ':' + reldir)
+            rel_tree = Repo().heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
+            for dir in rel.split('/'):
+                rel_tree = rel_tree[dir]
+            ticketfiles = [(x.mode, x.type, x.hexsha, x.name) for x in rel_tree.blobs]
+
             tickets = [ ticket.create_from_lines(git.cat_file(sha), ticket_id, rel, True) \
                                     for _, type, sha, ticket_id in ticketfiles \
                                     if type == 'blob' and ticket_id != it.HOLD_FILE \
                                 ]
+
 
             # Store the tickets in the inbox if neccessary
             inbox += filter(lambda t: t.is_mine(), tickets)
