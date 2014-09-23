@@ -112,7 +112,7 @@ class Gitit:
         # else, initialize the new .it database alongside the .git repo
         gitrepo = repo.find_git_repo()
         if not gitrepo:
-            log.printerr('Not a valid Git repository.')
+            log.printerr('%s: Not a valid Git repository.'%gitrepo)
             return
 
         parent, _ = os.path.split(gitrepo)
