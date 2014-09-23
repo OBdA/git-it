@@ -138,6 +138,8 @@ class Gitit:
         print 'Initialized empty ticket database.'
 
     def match_or_error(self, sha):
+        """ Returns relative path to ticket
+        """
         self.require_itdb()
         # search files from ITDB_BRANCH:TICKET_DIR
         base_tree = Repo().heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
@@ -375,10 +377,6 @@ class Gitit:
         self.require_itdb()
         base_tree = Repo().heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
         releasedirs = [(x.mode, x.type, x.hexsha, x.name) for x in base_tree.trees]
-#        releasedirs = filter(
-#                lambda x: x[1] == 'tree',
-#                git.tree(root=base_tree)
-#        )
 
         # Filter releases
         if releases_filter:
