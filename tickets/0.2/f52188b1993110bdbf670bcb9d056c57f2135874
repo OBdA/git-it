@@ -7,3 +7,8 @@ Weight: 9
 Status: open
 Assigned to: Olaf Ohlenmacher
 
+Status
+======
+
++ error in command 'show'
+  error in repo.find_git_repo()
