@@ -159,7 +159,7 @@ class Gitit:
                 log.printerr(id)
             sys.exit(1)
         else:
-            return os.path.join(it.TICKET_DIR, matches[0])
+            return matches[0]
     
     def edit(self, sha):
         i, rel, fullsha, match = self.get_ticket(sha)
