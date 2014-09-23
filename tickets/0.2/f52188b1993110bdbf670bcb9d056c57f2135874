@@ -11,4 +11,4 @@ Status
 ======
 
 + error in command 'show'
-  error in repo.find_git_repo()
+  error in get_ticket() -> match_or_error(sha)
