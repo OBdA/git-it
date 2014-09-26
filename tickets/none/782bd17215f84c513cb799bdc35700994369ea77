@@ -7,3 +7,26 @@ Weight: 3
 Status: open
 Assigned to: -
 
++ git-it fails with an 'IndexError'
++ git-it errornous creates the 'tickets' directory
+
+    $ it init
+    Traceback (most recent call last):
+      File "/home/olf/bin/it", line 80, in <module>
+        g.init()
+      File "/home/olf/lib/gitit.py", line 124, in init
+        curr_branch = git.current_branch()
+      File "/home/olf/lib/libgit.py", line 14, in current_branch
+        return filter(lambda x: x[1], all_branches())[0][0]
+    IndexError: list index out of range
+    $ git branch -a
+    $ ls -F
+    tickets/
+    $ ls -A tickets/
+    .hold
+    $ rm -rf tickets/
+    $ git add .
+    $ git commit -m "initial commit"
+    [...]
+    $ it init
+    Initialized empty ticket database.
