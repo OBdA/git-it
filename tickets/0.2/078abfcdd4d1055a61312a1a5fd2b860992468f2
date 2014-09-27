@@ -7,3 +7,4 @@ Weight: 6
 Status: open
 Assigned to: -
 
++ rewrite itdb_exists()
