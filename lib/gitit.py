@@ -74,8 +74,15 @@ def cmp_by_release_dir(dir1, dir2):
 
 class Gitit:
     def __init__(self):
-        pass
-    
+        self.repo = Repo()
+        self.itdb_tree = None
+        try:
+            self.itdb_tree = self.repo.heads[it.ITDB_BRANCH] \
+                    .commit.tree[it.TICKET_DIR]
+        except IndexError:
+            pass
+
+
     def itdb_exists(self, with_remotes=False):
         if with_remotes:
             branches = [it.ITDB_BRANCH, 'remotes/origin/' + it.ITDB_BRANCH, None]
@@ -83,18 +90,19 @@ class Gitit:
             branches = [it.ITDB_BRANCH, None]
 
         for branch in branches:
-            if branch in [b.name for b in Repo().branches]:
+            if branch in [b.name for b in self.repo.branches]:
                 break
         if branch == None:
             return False
 
-        ls = git.tree(branch, recursive=True)
+        # look for the hold file in the file list
         abs_hold_file = os.path.join(it.TICKET_DIR, it.HOLD_FILE)
-        for _, _, _, file in ls:
-            if file == abs_hold_file:
-                return branch
+        ls = [x.path for x in self.itdb_tree.list_traverse(depth=1)]
+        if abs_hold_file in ls:
+            return True
         return False
-    
+
+
     def require_itdb(self):
         """
         This method asserts that the itdb is initialized, or errors if not.
@@ -124,7 +132,7 @@ class Gitit:
                      'this directory from\nbeing pruned by Git.')
 
         # Commit the new itdb to the repo
-        curr_branch = Repo().active_branch.name
+        curr_branch = self.repo.active_branch.name
         git.change_head_branch(it.ITDB_BRANCH)
         git.command_lines('add', [hold_file])
         msg = 'Initialized empty ticket database.'
@@ -141,9 +149,10 @@ class Gitit:
         """ Returns relative path to ticket
         """
         self.require_itdb()
+
         # search files from ITDB_BRANCH:TICKET_DIR
-        base_tree = Repo().heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
-        files = git.tree(recursive=True, root=base_tree)
+        files = [(x.mode, x.type, x.hexsha, x.path)
+                for x in self.itdb_tree.list_traverse()]
 
         matches = []
         for _, _, _, path in files:
@@ -185,7 +194,7 @@ class Gitit:
 
                 # Now, when the edit has succesfully taken place, switch branches, commit,
                 # and switch back
-                curr_branch = Repo().active_branch.name
+                curr_branch = self.repo.active_branch.name
                 git.change_head_branch(it.ITDB_BRANCH)
                 msg = 'ticket \'%s\' edited' % sha7
                 i.save()
@@ -222,7 +231,7 @@ class Gitit:
         # Try to move the file into it
         try:
             # Commit the new itdb to the repo
-            curr_branch = Repo().active_branch.name
+            curr_branch = self.repo.active_branch.name
             git.change_head_branch(it.ITDB_BRANCH)
 
             i.save(target_path)
@@ -257,7 +266,7 @@ class Gitit:
             sys.exit(1)
 
         # now we may sync the git-it branch safely!
-        curr = Repo().active_branch.name
+        curr = self.repo.active_branch.name
         os.system('git checkout git-it')
         os.system('git pull')
         os.system('git checkout \'%s\'' % curr)
@@ -287,7 +296,7 @@ class Gitit:
         print 'new ticket \'%s\' saved' % sha7
 
         # Commit the new ticket to the 'aaa' branch
-        curr_branch = Repo().active_branch.name
+        curr_branch = self.repo.active_branch.name
         git.change_head_branch(it.ITDB_BRANCH)
         git.command_lines('add', [i.filename()])
         msg = '%s added ticket \'%s\'' % (i.issuer, sha7)
@@ -375,7 +384,7 @@ class Gitit:
     
     def list(self, show_types = ['open', 'test'], releases_filter = []):
         self.require_itdb()
-        base_tree = Repo().heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
+        base_tree = self.repo.heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
         releasedirs = [(x.mode, x.type, x.hexsha, x.name) for x in base_tree.trees]
 
         # Filter releases
@@ -398,7 +407,7 @@ class Gitit:
         print_count = 0
         releasedirs.sort(cmp_by_release_dir)
         for _, _, sha, rel in releasedirs:
-            rel_tree = Repo().heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
+            rel_tree = self.repo.heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
             for dir in rel.split('/'):
                 rel_tree = rel_tree[dir]
             ticketfiles = [(x.mode, x.type, x.hexsha, x.name) for x in rel_tree.blobs]
@@ -427,7 +436,7 @@ class Gitit:
         sha7 = misc.chop(basename, 7)
 
         # Commit the new itdb to the repo
-        curr_branch = Repo().active_branch.name
+        curr_branch = self.repo.active_branch.name
         git.change_head_branch(it.ITDB_BRANCH)
         msg = 'removed ticket \'%s\'' % sha7
         git.command_lines('commit', ['-m', msg, match], from_root=True)
@@ -455,7 +464,7 @@ class Gitit:
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
-        curr_branch = Repo().active_branch.name
+        curr_branch = self.repo.active_branch.name
         git.change_head_branch(it.ITDB_BRANCH)
         i.status = new_status
         msg = '%s ticket \'%s\'' % (i.status, sha7)
@@ -476,7 +485,7 @@ class Gitit:
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
-        curr_branch = Repo().active_branch.name
+        curr_branch = self.repo.active_branch.name
         git.change_head_branch(it.ITDB_BRANCH)
         msg = 'ticket \'%s\' reopened' % sha7
         i.status = 'open'
@@ -492,7 +501,7 @@ class Gitit:
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(sha, 7)
 
-        curr_branch = Repo().active_branch.name
+        curr_branch = self.repo.active_branch.name
         git.change_head_branch(it.ITDB_BRANCH)
         fullname = os.popen('git config user.name').read().strip()
         msg = 'ticket \'%s\' taken by %s' % (sha7, fullname)
@@ -509,7 +518,7 @@ class Gitit:
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(sha, 7)
 
-        curr_branch = Repo().active_branch.name
+        curr_branch = self.repo.active_branch.name
         git.change_head_branch(it.ITDB_BRANCH)
         msg = 'ticket \'%s\' left alone' % sha7
         i.assigned_to = '-'

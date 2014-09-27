@@ -12,22 +12,6 @@ def quote_string(s):
     return '\"%s\"' % s
 
 
-def tree(branch=None, recursive = False, root = None):
-    if not root and not branch:
-        raise Exception("tree(): no starting branch or root is given")
-    # initialize tree
-    if not root:
-        root = Repo().heads[branch].commit.tree
-    if not root:
-        return []
-    objs = [(x.mode, x.type, x.hexsha, x.path) for x in root.blobs]
-    objs.extend([(x.mode, x.type, x.hexsha, x.path) for x in root.trees])
-    if recursive and root.trees:
-        for t in root.trees:
-            objs.extend(tree(branch, recursive=True, root=t))
-    return objs
-
-
 def cat_file(sha):
     return command_lines('cat-file', [ '-p', sha ])
 
