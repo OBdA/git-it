@@ -111,7 +111,8 @@ class Gitit:
             log.printerr('itdb not yet initialized. run \'it init\' first to ' + \
                                      'create a new itdb.')
             sys.exit(1)
-    
+
+
     def init(self):
         branch = self.itdb_exists(with_remotes=True)
         if branch:
