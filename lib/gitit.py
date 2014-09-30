@@ -133,17 +133,18 @@ class Gitit:
 
         # Commit the new itdb to the repo
         curr_branch = self.repo.active_branch.name
-        git.change_head_branch(it.ITDB_BRANCH)
-        git.command_lines('add', [hold_file])
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/%s'%it.ITDB_BRANCH])
+        self.repo.git.add([hold_file])
         msg = 'Initialized empty ticket database.'
-        git.command_lines('commit', ['-m', msg, hold_file])
+        self.repo.git.commit(['-m', msg, hold_file])
         os.remove(hold_file)
         os.rmdir(ticket_dir)
-        git.change_head_branch(curr_branch)
-        abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
-        git.command_lines('reset', ['HEAD', abs_ticket_dir])
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/%s'%curr_branch])
+        abs_ticket_dir = os.path.join( self.repo.working_dir, it.TICKET_DIR)
+        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'Initialized empty ticket database.'
+
 
     def match_or_error(self, sha):
         """ Returns relative path to ticket
