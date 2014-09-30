@@ -2,6 +2,7 @@
 
 import os
 
+# FIXME: replace with Repo().workin_dir
 def find_root():
     cwd = os.getcwd()
     while cwd != '/':
@@ -12,6 +13,7 @@ def find_root():
     return None
 
 
+# FIXME: replace with Repo().git_dir
 def find_git_repo():
     cwd = os.getcwd()
     while cwd != '/':
