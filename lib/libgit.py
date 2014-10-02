@@ -25,7 +25,7 @@ def command_lines(subcmd, opts = [], from_root=False, explicit_git_dir=False):
         explicit_git_dir_str = '--git-dir=%s ' % git_dir
     if from_root:
         cwd = os.getcwd()
-        os.chdir(repo.find_root())
+        os.chdir(Repo().working_dir)
     cmd = 'git %s%s %s' % (explicit_git_dir_str, subcmd, ' '.join(map(quote_string, opts)))
     output = os.popen(cmd).read()
     if from_root:
@@ -41,7 +41,7 @@ def command_exitcode_only(subcmd, opts = [], from_root=False, explicit_git_dir=F
         explicit_git_dir_str = '--git-dir=%s ' % git_dir
     if from_root:
         cwd = os.getcwd()
-        os.chdir(repo.find_root())
+        os.chdir(Repo.working_dir)
     cmd = 'git %s%s %s' % (explicit_git_dir_str, subcmd, ' '.join(map(quote_string, opts)))
     p = os.popen(cmd)
     exitcode = p.close()
