@@ -8,6 +8,7 @@ import misc
 import repo
 import log
 import it
+from git import Repo
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -203,6 +204,7 @@ class Ticket:
         self.assigned_to = '-'
         self.weight = 3  # the weight of 'minor' by default
         self.release = it.UNCATEGORIZED
+        self.working_dir = Repo().working_dir
 
     def is_mine(self):
         fullname = os.popen('git config user.name').read().strip()
@@ -287,7 +289,7 @@ class Ticket:
         print self.body
 
     def filename(self):
-        file = os.path.join(repo.find_root(), it.TICKET_DIR, self.release, self.id)
+        file = os.path.join(self.working_dir, it.TICKET_DIR, self.release, self.id)
         return file
 
     def save(self, file = None):
