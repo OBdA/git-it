@@ -11,9 +11,6 @@ def quote_string(s):
     return '\"%s\"' % s
 
 
-def cat_file(sha):
-    return command_lines('cat-file', [ '-p', sha ])
-
 def change_head_branch(branch):
     return command_lines('symbolic-ref', ['HEAD', 'refs/heads/%s' % branch])
 

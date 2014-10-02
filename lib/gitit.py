@@ -413,10 +413,12 @@ class Gitit:
                 rel_tree = rel_tree[dir]
             ticketfiles = [(x.mode, x.type, x.hexsha, x.name) for x in rel_tree.blobs]
 
-            tickets = [ ticket.create_from_lines(git.cat_file(sha), ticket_id, rel, True) \
-                                    for _, type, sha, ticket_id in ticketfiles \
-                                    if type == 'blob' and ticket_id != it.HOLD_FILE \
-                                ]
+            tickets = [ ticket.create_from_lines(\
+                        self.repo.git.cat_file(['-p', sha]).split("\n"), \
+                        ticket_id, rel, True) \
+                    for _, type, sha, ticket_id in ticketfiles \
+                    if type == 'blob' and ticket_id != it.HOLD_FILE \
+            ]
 
 
             # Store the tickets in the inbox if neccessary
@@ -449,11 +451,11 @@ class Gitit:
     
     def get_ticket(self, sha):
         match = self.match_or_error(sha)
-        contents = git.cat_file(it.ITDB_BRANCH + ':' + match)
+        contents = self.repo.git.cat_file(['-p', it.ITDB_BRANCH + ':' + match])
         parent, fullsha = os.path.split(match)
         rel = os.path.basename(parent)
         sha7 = misc.chop(fullsha, 7)
-        i = ticket.create_from_lines(contents, fullsha, rel, True)
+        i = ticket.create_from_lines(contents.split("\n"), fullsha, rel, True)
         return (i, rel, fullsha, match)
     
     def finish_ticket(self, sha, new_status):
