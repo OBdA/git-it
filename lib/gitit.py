@@ -2,7 +2,7 @@
 
 import sys, os, re
 import datetime
-import misc, repo, log, ticket, colors, libgit as git, it
+import misc, log, ticket, colors, libgit as git, it
 
 from git import *
 

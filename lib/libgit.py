@@ -4,7 +4,6 @@
 # Python Git library
 #
 import os
-import repo
 from git import *
 
 def quote_string(s):

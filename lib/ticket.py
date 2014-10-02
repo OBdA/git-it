@@ -5,7 +5,6 @@ import datetime
 import colors
 import math
 import misc
-import repo
 import log
 import it
 from git import Repo
