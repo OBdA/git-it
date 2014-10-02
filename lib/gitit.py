@@ -289,11 +289,10 @@ class Gitit:
         s.update(i.__str__())
         s.update(os.getlogin())
         s.update(datetime.datetime.now().__str__())
-        i.id = s.hexdigest()
+        i.id = ticketname = s.hexdigest()
 
         # Save the ticket to disk
         i.save()
-        _, ticketname = os.path.split(i.filename())
         sha7 = misc.chop(ticketname, 7)
         print 'new ticket \'%s\' saved' % sha7
 
