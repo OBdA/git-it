@@ -260,10 +260,10 @@ class Gitit:
     def sync(self):
         # check whether this working tree has unstaged/uncommitted changes
         # in order to prevent data loss from happening
-        if git.has_unstaged_changes():
+        if self.repo.is_dirty(index=False):
             print 'current working tree has unstaged changes. aborting.'
             sys.exit(1)
-        if git.has_uncommitted_changes():
+        if self.repo.is_dirty():
             print 'current working tree has uncommitted changes. aborting.'
             sys.exit(1)
 
