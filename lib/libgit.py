@@ -11,9 +11,6 @@ def quote_string(s):
     return '\"%s\"' % s
 
 
-def change_head_branch(branch):
-    return command_lines('symbolic-ref', ['HEAD', 'refs/heads/%s' % branch])
-
 def command_lines(subcmd, opts = [], from_root=False, explicit_git_dir=False):
     explicit_git_dir_str = ''
     if explicit_git_dir:
