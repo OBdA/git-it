@@ -5,6 +5,6 @@ Type: issue
 Priority: 3
 Weight: 1
 Status: open
-Assigned to: -
+Assigned to: Olaf Ohlenmacher
 
 git rev-parse --show-toplevel
