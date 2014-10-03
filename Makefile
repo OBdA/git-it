@@ -15,7 +15,6 @@ SCRIPT_FILES+=lib/gitit.py
 SCRIPT_FILES+=lib/it.py
 SCRIPT_FILES+=lib/log.py
 SCRIPT_FILES+=lib/misc.py
-SCRIPT_FILES+=lib/repo.py
 SCRIPT_FILES+=lib/ticket.py
 
 all: archive
