@@ -11,7 +11,6 @@ EXEC_FILES=bin/it
 
 # files that need mode 644
 SCRIPT_FILES =lib/colors.py
-SCRIPT_FILES+=lib/libgit.py
 SCRIPT_FILES+=lib/gitit.py
 SCRIPT_FILES+=lib/it.py
 SCRIPT_FILES+=lib/log.py
