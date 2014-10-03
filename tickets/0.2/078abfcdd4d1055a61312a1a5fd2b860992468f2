@@ -5,6 +5,6 @@ Type: feature
 Priority: 2
 Weight: 6
 Status: open
-Assigned to: -
+Assigned to: Olaf Ohlenmacher
 
 + rewrite itdb_exists()
