@@ -74,7 +74,12 @@ def cmp_by_release_dir(dir1, dir2):
 
 class Gitit:
     def __init__(self):
-        self.repo = Repo()
+        try:
+            self.repo = Repo()
+        except InvalidGitRepositoryError:
+            log.printerr('Not a valid Git repository.')
+            sys.exit(1)
+
         self.itdb_tree = None
         try:
             self.itdb_tree = self.repo.heads[it.ITDB_BRANCH] \
