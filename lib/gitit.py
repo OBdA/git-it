@@ -119,10 +119,25 @@ class Gitit:
 
 
     def init(self):
-        branch = self.itdb_exists(with_remotes=True)
-        if branch:
-            print 'Already initialized issue database in branch \'%s\'.' % branch
-            return
+        """ Initializes a ITDB if it does not exists. Otherwise search for
+            a remote ITDB an branch from it.
+        """
+        # check wheter it is already initialzed
+        if it.ITDB_BRANCH in [b.name for b in self.repo.branches]:
+            # check for the hold file
+            abs_hold_file = os.path.join(it.TICKET_DIR, it.HOLD_FILE)
+            if abs_hold_file in [x.path for x in self.itdb_tree.list_traverse(depth=1)]:
+                print 'Issue database already initialized.'
+                return
+
+        # search for a ITDB on a remote branch
+        for r in self.repo.remotes:
+            for ref in r.refs:
+                if ref.name.endswith(it.ITDB_BRANCH):
+                    print 'Initialize ticket database from %s.' % ref.name
+                    self.repo.create_head( 'refs/heads/%s'%it.ITDB_BRANCH, ref.name)
+                    return
+
         # else, initialize the new .it database alongside the .git repo
         gitrepo = self.repo.git_dir
         if not gitrepo:
