@@ -1,0 +1,9 @@
+Subject: replace all git.cmd.* with pure GitPython elements
+Issuer: Olaf Ohlenmacher <olaf.ohlenmacher@ldi.rlp.de>
+Date: 2014-10-07 11:54:15
+Type: issue
+Priority: 3
+Weight: 8
+Status: open
+Assigned to: -
+
