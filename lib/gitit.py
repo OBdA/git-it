@@ -2,7 +2,9 @@
 
 import sys, os, re
 import datetime
-import misc, repo, log, ticket, colors, libgit as git, it
+import misc, log, ticket, colors, it
+
+from git import *
 
 # Backward-compatible import of SHA1 en MD5 hash algoritms
 try:
@@ -72,8 +74,20 @@ def cmp_by_release_dir(dir1, dir2):
 
 class Gitit:
     def __init__(self):
-        pass
-    
+        try:
+            self.repo = Repo()
+        except InvalidGitRepositoryError:
+            log.printerr('Not a valid Git repository.')
+            sys.exit(1)
+
+        self.itdb_tree = None
+        try:
+            self.itdb_tree = self.repo.heads[it.ITDB_BRANCH] \
+                    .commit.tree[it.TICKET_DIR]
+        except IndexError:
+            pass
+
+
     def itdb_exists(self, with_remotes=False):
         if with_remotes:
             branches = [it.ITDB_BRANCH, 'remotes/origin/' + it.ITDB_BRANCH, None]
@@ -81,17 +95,19 @@ class Gitit:
             branches = [it.ITDB_BRANCH, None]
 
         for branch in branches:
-            if git.branch_exists(branch): break
+            if branch in [b.name for b in self.repo.branches]:
+                break
         if branch == None:
             return False
 
-        ls = git.tree(branch, recursive=True)
+        # look for the hold file in the file list
         abs_hold_file = os.path.join(it.TICKET_DIR, it.HOLD_FILE)
-        for _, _, _, file in ls:
-            if file == abs_hold_file:
-                return branch
+        ls = [x.path for x in self.itdb_tree.list_traverse(depth=1)]
+        if abs_hold_file in ls:
+            return True
         return False
-    
+
+
     def require_itdb(self):
         """
         This method asserts that the itdb is initialized, or errors if not.
@@ -100,16 +116,32 @@ class Gitit:
             log.printerr('itdb not yet initialized. run \'it init\' first to ' + \
                                      'create a new itdb.')
             sys.exit(1)
-    
+
+
     def init(self):
-        branch = self.itdb_exists(with_remotes=True)
-        if branch:
-            print 'Already initialized issue database in branch \'%s\'.' % branch
-            return
+        """ Initializes a ITDB if it does not exists. Otherwise search for
+            a remote ITDB an branch from it.
+        """
+        # check wheter it is already initialzed
+        if it.ITDB_BRANCH in [b.name for b in self.repo.branches]:
+            # check for the hold file
+            abs_hold_file = os.path.join(it.TICKET_DIR, it.HOLD_FILE)
+            if abs_hold_file in [x.path for x in self.itdb_tree.list_traverse(depth=1)]:
+                print 'Issue database already initialized.'
+                return
+
+        # search for a ITDB on a remote branch
+        for r in self.repo.remotes:
+            for ref in r.refs:
+                if ref.name.endswith(it.ITDB_BRANCH):
+                    print 'Initialize ticket database from %s.' % ref.name
+                    self.repo.create_head( 'refs/heads/%s'%it.ITDB_BRANCH, ref.name)
+                    return
+
         # else, initialize the new .it database alongside the .git repo
-        gitrepo = repo.find_git_repo()
+        gitrepo = self.repo.git_dir
         if not gitrepo:
-            log.printerr('Not a valid Git repository.')
+            log.printerr('%s: Not a valid Git repository.'%gitrepo)
             return
 
         parent, _ = os.path.split(gitrepo)
@@ -121,22 +153,29 @@ class Gitit:
                      'this directory from\nbeing pruned by Git.')
 
         # Commit the new itdb to the repo
-        curr_branch = git.current_branch()
-        git.change_head_branch('git-it')
-        git.command_lines('add', [hold_file])
+        curr_branch = self.repo.active_branch.name
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+        self.repo.git.add([hold_file])
         msg = 'Initialized empty ticket database.'
-        git.command_lines('commit', ['-m', msg, hold_file])
+        self.repo.git.commit(['-m', msg, hold_file])
         os.remove(hold_file)
         os.rmdir(ticket_dir)
-        git.change_head_branch(curr_branch)
-        abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
-        git.command_lines('reset', ['HEAD', abs_ticket_dir])
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+        abs_ticket_dir = os.path.join( self.repo.working_dir, it.TICKET_DIR)
+        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'Initialized empty ticket database.'
 
+
     def match_or_error(self, sha):
+        """ Returns relative path to ticket
+        """
         self.require_itdb()
-        files = git.tree(it.ITDB_BRANCH + ':' + it.TICKET_DIR, recursive=True)
+
+        # search files from ITDB_BRANCH:TICKET_DIR
+        files = [(x.mode, x.type, x.hexsha, x.path)
+                for x in self.itdb_tree.list_traverse()]
+
         matches = []
         for _, _, _, path in files:
             _, file = os.path.split(path)
@@ -153,7 +192,7 @@ class Gitit:
                 log.printerr(id)
             sys.exit(1)
         else:
-            return os.path.join(it.TICKET_DIR, matches[0])
+            return matches[0]
     
     def edit(self, sha):
         i, rel, fullsha, match = self.get_ticket(sha)
@@ -177,14 +216,14 @@ class Gitit:
 
                 # Now, when the edit has succesfully taken place, switch branches, commit,
                 # and switch back
-                curr_branch = git.current_branch()
-                git.change_head_branch('git-it')
+                curr_branch = self.repo.active_branch.name
+                self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
                 msg = 'ticket \'%s\' edited' % sha7
                 i.save()
-                git.command_lines('commit', ['-m', msg, i.filename()])
-                git.change_head_branch(curr_branch)
-                abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
-                git.command_lines('reset', ['HEAD', abs_ticket_dir])
+                self.repo.git.commit(['-m', msg, i.filename()])
+                self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+                abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
+                self.repo.git.reset(['HEAD', abs_ticket_dir])
                 misc.rmdirs(abs_ticket_dir)
                 print 'ticket \'%s\' edited succesfully' % sha7
             else:
@@ -200,8 +239,8 @@ class Gitit:
         i, rel, fullsha, src_path = self.get_ticket(sha)
         sha7 = misc.chop(fullsha, 7)
 
-        src_dir = os.path.join(repo.find_root(), it.TICKET_DIR, rel)
-        target_dir = os.path.join(repo.find_root(), it.TICKET_DIR, to_rel)
+        src_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR, rel)
+        target_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR, to_rel)
         target_path = os.path.join(target_dir, fullsha)
         if src_dir == target_dir:
             log.printerr('ticket \'%s\' already in \'%s\'' % (sha7, to_rel))
@@ -214,19 +253,19 @@ class Gitit:
         # Try to move the file into it
         try:
             # Commit the new itdb to the repo
-            curr_branch = git.current_branch()
-            git.change_head_branch('git-it')
+            curr_branch = self.repo.active_branch.name
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
 
             i.save(target_path)
             if os.path.isfile(src_path):
                 os.remove(src_path)
 
             msg = 'moved ticket \'%s\' (%s --> %s)' % (sha7, rel, to_rel)
-            git.command_lines('add', [target_path])
-            git.command_lines('commit', ['-m', msg, src_path, target_path])
-            git.change_head_branch(curr_branch)
-            abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
-            git.command_lines('reset', ['HEAD', abs_ticket_dir])
+            self.repo.git.add([target_path])
+            self.repo.git.commit(['-m', msg, src_path, target_path])
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+            abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
+            self.repo.git.reset(['HEAD', abs_ticket_dir])
             misc.rmdirs(abs_ticket_dir)
 
             print 'ticket \'%s\' moved to release \'%s\'' % (sha7, to_rel)
@@ -241,15 +280,15 @@ class Gitit:
     def sync(self):
         # check whether this working tree has unstaged/uncommitted changes
         # in order to prevent data loss from happening
-        if git.has_unstaged_changes():
+        if self.repo.is_dirty(index=False):
             print 'current working tree has unstaged changes. aborting.'
             sys.exit(1)
-        if git.has_uncommitted_changes():
+        if self.repo.is_dirty():
             print 'current working tree has uncommitted changes. aborting.'
             sys.exit(1)
 
         # now we may sync the git-it branch safely!
-        curr = git.current_branch()
+        curr = self.repo.active_branch.name
         os.system('git checkout git-it')
         os.system('git pull')
         os.system('git checkout \'%s\'' % curr)
@@ -270,25 +309,24 @@ class Gitit:
         s.update(i.__str__())
         s.update(os.getlogin())
         s.update(datetime.datetime.now().__str__())
-        i.id = s.hexdigest()
+        i.id = ticketname = s.hexdigest()
 
         # Save the ticket to disk
         i.save()
-        _, ticketname = os.path.split(i.filename())
         sha7 = misc.chop(ticketname, 7)
         print 'new ticket \'%s\' saved' % sha7
 
         # Commit the new ticket to the 'aaa' branch
-        curr_branch = git.current_branch()
-        git.change_head_branch('git-it')
-        git.command_lines('add', [i.filename()])
+        curr_branch = self.repo.active_branch.name
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+        self.repo.git.add([i.filename()])
         msg = '%s added ticket \'%s\'' % (i.issuer, sha7)
-        git.command_lines('commit', ['-m', msg, i.filename()])
+        self.repo.git.commit(['-m', msg, i.filename()])
         os.remove(i.filename())
-        git.command_lines('rm', ['--cached', i.filename()])
-        git.change_head_branch(curr_branch)
-        abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
-        git.command_lines('reset', ['HEAD', abs_ticket_dir])
+        self.repo.git.rm(['--cached', i.filename()])
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+        abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
+        self.repo.git.reset(['HEAD', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         return i
     
@@ -367,8 +405,8 @@ class Gitit:
     
     def list(self, show_types = ['open', 'test'], releases_filter = []):
         self.require_itdb()
-        releasedirs = filter(lambda x: x[1] == 'tree', git.tree(it.ITDB_BRANCH + \
-                                                                                                                 ':' + it.TICKET_DIR))
+        base_tree = self.repo.heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
+        releasedirs = [(x.mode, x.type, x.hexsha, x.name) for x in base_tree.trees]
 
         # Filter releases
         if releases_filter:
@@ -390,12 +428,18 @@ class Gitit:
         print_count = 0
         releasedirs.sort(cmp_by_release_dir)
         for _, _, sha, rel in releasedirs:
-            reldir = os.path.join(it.TICKET_DIR, rel)
-            ticketfiles = git.tree(it.ITDB_BRANCH + ':' + reldir)
-            tickets = [ ticket.create_from_lines(git.cat_file(sha), ticket_id, rel, True) \
-                                    for _, type, sha, ticket_id in ticketfiles \
-                                    if type == 'blob' and ticket_id != it.HOLD_FILE \
-                                ]
+            rel_tree = self.repo.heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
+            for dir in rel.split('/'):
+                rel_tree = rel_tree[dir]
+            ticketfiles = [(x.mode, x.type, x.hexsha, x.name) for x in rel_tree.blobs]
+
+            tickets = [ ticket.create_from_lines(\
+                        self.repo.git.cat_file(['-p', sha]).split("\n"), \
+                        ticket_id, rel, True) \
+                    for _, type, sha, ticket_id in ticketfiles \
+                    if type == 'blob' and ticket_id != it.HOLD_FILE \
+            ]
+
 
             # Store the tickets in the inbox if neccessary
             inbox += filter(lambda t: t.is_mine(), tickets)
@@ -415,23 +459,25 @@ class Gitit:
         sha7 = misc.chop(basename, 7)
 
         # Commit the new itdb to the repo
-        curr_branch = git.current_branch()
-        git.change_head_branch('git-it')
+        curr_branch = self.repo.active_branch.name
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
         msg = 'removed ticket \'%s\'' % sha7
-        git.command_lines('commit', ['-m', msg, match], from_root=True)
-        git.change_head_branch(curr_branch)
-        abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
-        git.command_lines('reset', ['HEAD', abs_ticket_dir])
+        #FIXME: from_root=True: needed with Repo().git.commit()?
+        #self.repo.git.commit(['-m', msg, match], from_root=True)
+        self.repo.git.commit(['-m', msg, match])
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+        abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
+        self.repo.git.reset(['HEAD', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'ticket \'%s\' removed'% sha7
     
     def get_ticket(self, sha):
         match = self.match_or_error(sha)
-        contents = git.cat_file(it.ITDB_BRANCH + ':' + match)
+        contents = self.repo.git.cat_file(['-p', it.ITDB_BRANCH + ':' + match])
         parent, fullsha = os.path.split(match)
         rel = os.path.basename(parent)
         sha7 = misc.chop(fullsha, 7)
-        i = ticket.create_from_lines(contents, fullsha, rel, True)
+        i = ticket.create_from_lines(contents.split("\n"), fullsha, rel, True)
         return (i, rel, fullsha, match)
     
     def finish_ticket(self, sha, new_status):
@@ -443,15 +489,17 @@ class Gitit:
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
-        curr_branch = git.current_branch()
-        git.change_head_branch('git-it')
+        curr_branch = self.repo.active_branch.name
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
         i.status = new_status
         msg = '%s ticket \'%s\'' % (i.status, sha7)
         i.save()
-        git.command_lines('commit', ['-m', msg, match], from_root=True)
-        git.change_head_branch(curr_branch)
-        abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
-        git.command_lines('reset', ['HEAD', abs_ticket_dir])
+        #FIXME: from_root=True: needed?
+        #self.repo.git.commit(['-m', msg, match], from_root=True)
+        self.repo.git.commit(['-m', msg, match])
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+        abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
+        self.repo.git.reset(['HEAD', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'ticket \'%s\' %s' % (sha7, new_status)
     
@@ -464,15 +512,17 @@ class Gitit:
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
-        curr_branch = git.current_branch()
-        git.change_head_branch('git-it')
+        curr_branch = self.repo.active_branch.name
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
         msg = 'ticket \'%s\' reopened' % sha7
         i.status = 'open'
         i.save()
-        git.command_lines('commit', ['-m', msg, match], from_root=True)
-        git.change_head_branch(curr_branch)
-        abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
-        git.command_lines('reset', ['HEAD', abs_ticket_dir])
+        #FIXME: from_root=True?
+        #self.repo.git.commit(['-m', msg, match], from_root=True)
+        self.repo.git.commit(['-m', msg, match])
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+        abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
+        self.repo.git.reset(['HEAD', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'ticket \'%s\' reopened' % sha7
 
@@ -480,16 +530,18 @@ class Gitit:
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(sha, 7)
 
-        curr_branch = git.current_branch()
-        git.change_head_branch('git-it')
+        curr_branch = self.repo.active_branch.name
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
         fullname = os.popen('git config user.name').read().strip()
         msg = 'ticket \'%s\' taken by %s' % (sha7, fullname)
         i.assigned_to = fullname
         i.save()
-        git.command_lines('commit', ['-m', msg, match], from_root=True)
-        git.change_head_branch(curr_branch)
-        abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
-        git.command_lines('reset', ['HEAD', abs_ticket_dir])
+        #FIXME: from_root=True?
+        #self.repo.git.commit(['-m', msg, match], from_root=True)
+        self.repo.git.commit(['-m', msg, match])
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+        abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
+        self.repo.git.reset(['HEAD', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'ticket \'%s\' taken' % sha7
 
@@ -497,15 +549,17 @@ class Gitit:
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(sha, 7)
 
-        curr_branch = git.current_branch()
-        git.change_head_branch('git-it')
+        curr_branch = self.repo.active_branch.name
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
         msg = 'ticket \'%s\' left alone' % sha7
         i.assigned_to = '-'
         i.save()
-        git.command_lines('commit', ['-m', msg, match], from_root=True)
-        git.change_head_branch(curr_branch)
-        abs_ticket_dir = os.path.join(repo.find_root(), it.TICKET_DIR)
-        git.command_lines('reset', ['HEAD', abs_ticket_dir])
+        #FIXME: from_root=True?
+        #self.repo.git.commit(['-m', msg, match], from_root=True)
+        self.repo.git.commit(['-m', msg, match])
+        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+        abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
+        self.repo.git.reset(['HEAD', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'ticket \'%s\' taken' % sha7
     
