@@ -8,6 +8,6 @@ TICKET_DIR     = 'tickets'
 HOLD_FILE      = '.hold'
 
 # release/category string used for not categorized issues
-UNCATEGORIZED  = 'none'
+UNCATEGORIZED  = 'None'
 
 EDIT_TMP_FILE  = '.it-edit.tmp'
