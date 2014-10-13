@@ -7,3 +7,10 @@ Weight: 3
 Status: open
 Assigned to: -
 
+$ it edit 74
+Traceback (most recent call last):
+  File "/home/olf/bin/it", line 97, in <module>
+    g.edit(params[0])
+  File "/home/olf/lib/gitit.py", line 183, in edit
+    i.save()
+AttributeError: 'NoneType' object has no attribute 'save'
