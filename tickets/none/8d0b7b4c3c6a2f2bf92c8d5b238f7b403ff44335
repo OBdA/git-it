@@ -7,3 +7,5 @@ Weight: 3
 Status: open
 Assigned to: Olaf Ohlenmacher
 
+cfg = GitConfigParser(['/home/olf/.gitconfig', repo_dir + '.git/config'])
+editor = cfg.get('core', 'editor')
