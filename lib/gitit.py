@@ -87,6 +87,23 @@ class Gitit:
         except IndexError:
             pass
 
+        self._gitcfg = GitConfigParser([
+            os.path.join(os.environ['HOME'], '.gitconfig'),
+            os.path.join(self.repo.git_dir, 'config')
+        ])
+
+
+    def get_cfg(self, key, section='core', default=None):
+        value = default
+        try:
+            value = self._gitcfg.get(section, key)
+        except NoSectionError as e:
+            print('DEBUG: %s: No such git config section: %s' % (section, e))
+
+        except NoOptionError:
+            print('DEBUG: %s: No such key in git config section "%s": %s' % (key, section, e))
+        return value
+
 
     def itdb_exists(self, with_remotes=False):
         if with_remotes:
@@ -201,7 +218,9 @@ class Gitit:
         # Save the contents of this ticket to a file, so it can be edited
         i.save(it.EDIT_TMP_FILE)
         timestamp1 = os.path.getmtime(it.EDIT_TMP_FILE)
-        success = os.system('vim "%s"' % it.EDIT_TMP_FILE) == 0
+        success = os.system(
+                self.get_cfg('editor', default='vim') + ' "%s"' % it.EDIT_TMP_FILE
+        ) == 0
         timestamp2 = os.path.getmtime(it.EDIT_TMP_FILE)
         if success:
             if timestamp1 < timestamp2:
@@ -223,7 +242,7 @@ class Gitit:
                 self.repo.git.commit(['-m', msg, i.filename()])
                 self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
                 abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-                self.repo.git.reset(['HEAD', abs_ticket_dir])
+                self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
                 misc.rmdirs(abs_ticket_dir)
                 print 'ticket \'%s\' edited succesfully' % sha7
             else:
@@ -265,7 +284,7 @@ class Gitit:
             self.repo.git.commit(['-m', msg, src_path, target_path])
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
             abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-            self.repo.git.reset(['HEAD', abs_ticket_dir])
+            self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
             misc.rmdirs(abs_ticket_dir)
 
             print 'ticket \'%s\' moved to release \'%s\'' % (sha7, to_rel)
@@ -326,7 +345,7 @@ class Gitit:
         self.repo.git.rm(['--cached', i.filename()])
         self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', abs_ticket_dir])
+        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         return i
     
@@ -467,7 +486,7 @@ class Gitit:
         self.repo.git.commit(['-m', msg, match])
         self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', abs_ticket_dir])
+        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'ticket \'%s\' removed'% sha7
     
@@ -499,7 +518,7 @@ class Gitit:
         self.repo.git.commit(['-m', msg, match])
         self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', abs_ticket_dir])
+        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'ticket \'%s\' %s' % (sha7, new_status)
     
@@ -522,7 +541,7 @@ class Gitit:
         self.repo.git.commit(['-m', msg, match])
         self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', abs_ticket_dir])
+        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'ticket \'%s\' reopened' % sha7
 
@@ -541,7 +560,7 @@ class Gitit:
         self.repo.git.commit(['-m', msg, match])
         self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', abs_ticket_dir])
+        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'ticket \'%s\' taken' % sha7
 
@@ -559,7 +578,7 @@ class Gitit:
         self.repo.git.commit(['-m', msg, match])
         self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', abs_ticket_dir])
+        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
         misc.rmdirs(abs_ticket_dir)
         print 'ticket \'%s\' taken' % sha7
     
