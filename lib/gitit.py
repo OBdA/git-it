@@ -87,6 +87,23 @@ class Gitit:
         except IndexError:
             pass
 
+        self._gitcfg = GitConfigParser([
+            os.path.join(os.environ['HOME'], '.gitconfig'),
+            os.path.join(self.repo.git_dir, 'config')
+        ])
+
+
+    def get_cfg(self, key, section='core', default=None):
+        value = default
+        try:
+            value = self._gitcfg.get(section, key)
+        except NoSectionError as e:
+            print('DEBUG: %s: No such git config section: %s' % (section, e))
+
+        except NoOptionError:
+            print('DEBUG: %s: No such key in git config section "%s": %s' % (key, section, e))
+        return value
+
 
     def itdb_exists(self, with_remotes=False):
         if with_remotes:
@@ -201,7 +218,9 @@ class Gitit:
         # Save the contents of this ticket to a file, so it can be edited
         i.save(it.EDIT_TMP_FILE)
         timestamp1 = os.path.getmtime(it.EDIT_TMP_FILE)
-        success = os.system('vim "%s"' % it.EDIT_TMP_FILE) == 0
+        success = os.system(
+                self.get_cfg('editor', default='vim') + ' "%s"' % it.EDIT_TMP_FILE
+        ) == 0
         timestamp2 = os.path.getmtime(it.EDIT_TMP_FILE)
         if success:
             if timestamp1 < timestamp2:
