@@ -1,4 +1,4 @@
-Subject: for edit use file name with hexsha base or random
+Subject: use randomised file names for temporary files
 Issuer: Olaf Ohlenmacher <olf@obda.de>
 Date: 2014-09-23 15:53:36
 Type: bug
@@ -7,4 +7,5 @@ Weight: 3
 Status: open
 Assigned to: -
 
-when editing two tickes the same time, the first one is overwritten
++ prevent attack vectors
++ prevent conflicting edits when editing multiple tickets the same time
