@@ -5,7 +5,7 @@ Type: bug
 Priority: 3
 Weight: 3
 Status: open
-Assigned to: -
+Assigned to: Olaf Ohlenmacher
 
 + prevent attack vectors
 + prevent conflicting edits when editing multiple tickets the same time
