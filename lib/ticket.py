@@ -291,7 +291,7 @@ class Ticket:
         file = os.path.join(self.working_dir, it.TICKET_DIR, self.release, self.id)
         return file
 
-    def save(self, file = None):
+    def save(self, filename = None):
         headers = [ 'Subject: %s'     % self.title,
                                 'Issuer: %s'      % self.issuer,
                                 'Date: %s'        % self.date.strftime(DATE_FORMAT),
@@ -306,14 +306,14 @@ class Ticket:
         contents = os.linesep.join(headers)
 
         # If an explicit file name is not given, calculate the default
-        if file is None:
-            file = self.filename()
+        if filename is None:
+            filename = self.filename()
 
         # Write the file
-        dir, _ = os.path.split(file)
+        dir, _ = os.path.split(filename)
         if dir and not os.path.isdir(dir):
             misc.mkdirs(dir)
-        f = open(file, 'w')
+        f = open(filename, 'w')
         try:
             f.write(contents)
         finally:
