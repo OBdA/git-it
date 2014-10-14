@@ -7,3 +7,16 @@ Weight: 6
 Status: open
 Assigned to: -
 
+$ bin/it take 782
+Traceback (most recent call last):
+  File "bin/it", line 148, in <module>
+    g.take_ticket(params[0])
+  File "/home/olf/dev/source/git-it/lib/gitit.py", line 562, in take_ticket
+    self.repo.git.commit(['-m', msg, match])
+  File "/usr/local/lib/python2.7/dist-packages/git/cmd.py", line 227, in <lambda>
+    return lambda *args, **kwargs: self._call_process(name, *args, **kwargs)
+  File "/usr/local/lib/python2.7/dist-packages/git/cmd.py", line 456, in _call_process
+    return self.execute(call, **_kwargs)
+  File "/usr/local/lib/python2.7/dist-packages/git/cmd.py", line 377, in execute
+    raise GitCommandError(command, status, stderr_value)
+git.exc.GitCommandError: 'git commit -m ticket '782' taken by Olaf Ohlenmacher tickets/none/782bd17215f84c513cb799bdc35700994369ea77' returned exit status 1:
