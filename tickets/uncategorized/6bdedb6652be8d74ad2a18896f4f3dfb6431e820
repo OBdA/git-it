@@ -1,0 +1,9 @@
+Subject: conflict when executing 'it' command and git-commit in parallel
+Issuer: Olaf Ohlenmacher <olf@obda.de>
+Date: 2014-10-14 23:07:34
+Type: bug
+Priority: 2
+Weight: 10
+Status: open
+Assigned to: -
+
