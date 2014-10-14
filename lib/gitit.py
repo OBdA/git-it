@@ -2,6 +2,7 @@
 
 import sys, os, re
 import datetime
+from tempfile import mkstemp
 import misc, log, ticket, colors, it
 
 from git import *
@@ -216,16 +217,17 @@ class Gitit:
         sha7 = misc.chop(fullsha, 7)
 
         # Save the contents of this ticket to a file, so it can be edited
-        i.save(it.EDIT_TMP_FILE)
-        timestamp1 = os.path.getmtime(it.EDIT_TMP_FILE)
+        fd, filename = mkstemp(prefix='git-it.')
+        i.save(filename)
+        timestamp1 = os.path.getmtime(filename)
         success = os.system(
-                self.get_cfg('editor', default='vim') + ' "%s"' % it.EDIT_TMP_FILE
+                self.get_cfg('editor', default='vim') + ' "%s"' % filename
         ) == 0
-        timestamp2 = os.path.getmtime(it.EDIT_TMP_FILE)
+        timestamp2 = os.path.getmtime(filename)
         if success:
             if timestamp1 < timestamp2:
                 try:
-                    i = ticket.create_from_file(it.EDIT_TMP_FILE, fullsha, rel)
+                    i = ticket.create_from_file(filename, fullsha, rel)
                 except ticket.MalformedTicketFieldException, e:
                     print 'Error parsing ticket: %s' % e
                     sys.exit(1)
@@ -251,7 +253,7 @@ class Gitit:
             log.printerr('editing of ticket \'%s\' failed' % sha7)
 
         # Remove the temporary file
-        os.remove(it.EDIT_TMP_FILE)
+        os.remove(filename)
     
     def mv(self, sha, to_rel):
         self.require_itdb()
