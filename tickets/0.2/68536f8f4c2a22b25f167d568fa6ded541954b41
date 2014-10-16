@@ -1,11 +1,14 @@
-Subject: error when 'take' a ticket
+Subject: secure all critical sections with try/finally blocks
 Issuer: Olaf Ohlenmacher <olf@obda.de>
 Date: 2014-10-14 23:22:51
 Type: bug
 Priority: 1
-Weight: 6
+Weight: 12
 Status: open
 Assigned to: Olaf Ohlenmacher
+
++ secure the critical section with an try - except - finally
++ check wheter there is anything to commit
 
 $ bin/it take 782
 Traceback (most recent call last):
