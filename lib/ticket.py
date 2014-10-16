@@ -112,17 +112,17 @@ def create_from_lines(array_with_lines, id = None, release = None, backward_comp
         # skip comment lines
         if line.startswith('#'):
             continue
-        
+
         # when we're in the body, just append lines
         if in_body or line.strip() == '':
             in_body = True
             ticket[None] += line + os.linesep
             continue
-        
+
         pos = line.find(':')
         if pos < 0:
             raise MalformedTicketFieldException, 'Cannot parse field "%s".' % line
-        
+
         key = line[:pos].strip()
         val = line[pos+1:].strip()
         ticket[key] = val
