@@ -5,7 +5,7 @@ Type: bug
 Priority: 2
 Weight: 3
 Status: open
-Assigned to: -
+Assigned to: Olaf Ohlenmacher
 
 $ it edit 74
 Traceback (most recent call last):
