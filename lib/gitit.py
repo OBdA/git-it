@@ -387,14 +387,14 @@ class Gitit:
 
             # ...and finally, print them
             hide_status = show_types == [ 'open' ]
-            cols = [ { 'id': 'id',       'width': 7, 'visible': True },
-                             { 'id': 'type',     'width': 7, 'visible': True },
-                             { 'id': 'title',    'width': 0, 'visible': True },
-                             { 'id': 'wght',     'width': 5, 'visible': not hide_status },
-                             { 'id': 'status',   'width': 8, 'visible': not hide_status },
-                             { 'id': 'date',     'width': 10, 'visible': True },
-                             { 'id': 'prio',     'width': 4, 'visible': True },
-                         ]
+            cols = [ { 'id': 'id',     'width':  7, 'visible': True },
+                     { 'id': 'type',   'width':  7, 'visible': True },
+                     { 'id': 'title',  'width':  0, 'visible': True },
+                     { 'id': 'wght',   'width':  5, 'visible': not hide_status },
+                     { 'id': 'status', 'width':  8, 'visible': not hide_status },
+                     { 'id': 'date',   'width': 10, 'visible': True },
+                     { 'id': 'prio',   'width':  4, 'visible': True },
+                   ]
 
             # Calculate the real value for the zero-width column
             # Assumption here is that there is only 1 zero-width column
