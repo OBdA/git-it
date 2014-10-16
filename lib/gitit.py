@@ -553,7 +553,7 @@ class Gitit:
 
         curr_branch = self.repo.active_branch.name
         self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-        fullname = os.popen('git config user.name').read().strip()
+        fullname = self.get_cfg('name', section='user', default='Anonymous')
         msg = 'ticket \'%s\' taken by %s' % (sha7, fullname)
         i.assigned_to = fullname
         i.save()
