@@ -88,10 +88,7 @@ class Gitit:
         except IndexError:
             pass
 
-        self._gitcfg = GitConfigParser([
-            os.path.join(os.environ['HOME'], '.gitconfig'),
-            os.path.join(self.repo.git_dir, 'config')
-        ])
+        self._gitcfg = self.repo.config_reader()
 
 
     def get_cfg(self, key, section='core', default=None):
