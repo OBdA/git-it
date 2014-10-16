@@ -5,7 +5,7 @@ Type: issue
 Priority: 3
 Weight: 2
 Status: open
-Assigned to: -
+Assigned to: Olaf Ohlenmacher
 
 lib/ticket.py:50:  fullname = os.popen('git config user.name').read().strip()
 lib/ticket.py:51:  email = os.popen('git config user.email').read().strip()
