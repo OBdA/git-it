@@ -7,3 +7,6 @@ Weight: 2
 Status: open
 Assigned to: -
 
+lib/ticket.py:50:  fullname = os.popen('git config user.name').read().strip()
+lib/ticket.py:51:  email = os.popen('git config user.email').read().strip()
+lib/ticket.py:209: fullname = os.popen('git config user.name').read().strip()
