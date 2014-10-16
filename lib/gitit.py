@@ -560,7 +560,7 @@ class Gitit:
         i.save()
         #FIXME: from_root=True?
         #self.repo.git.commit(['-m', msg, match], from_root=True)
-        self.repo.git.commit(['-m', msg, match])
+        self.repo.git.commit(['-m', msg, '--', match])
         self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
         self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
