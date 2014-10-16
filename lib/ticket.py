@@ -222,7 +222,8 @@ class Ticket:
             elif id == 'type':
                 colstrings.append(misc.pad_to_length(self.type, w))
             elif id == 'date':
-                colstrings.append(misc.pad_to_length('%s/%s' % (self.date.month, self.date.day), w))
+                colstrings.append(misc.pad_to_length('%d-%02d-%02d'
+                    % (self.date.year, self.date.month, self.date.day), w))
             elif id == 'title':
                 title = self.title
                 if self.assigned_to != '-' and annotate_ownership:

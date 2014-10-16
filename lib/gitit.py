@@ -392,7 +392,7 @@ class Gitit:
                              { 'id': 'title',    'width': 0, 'visible': True },
                              { 'id': 'wght',     'width': 5, 'visible': not hide_status },
                              { 'id': 'status',   'width': 8, 'visible': not hide_status },
-                             { 'id': 'date',     'width': 6, 'visible': True },
+                             { 'id': 'date',     'width': 10, 'visible': True },
                              { 'id': 'prio',     'width': 4, 'visible': True },
                          ]
 
