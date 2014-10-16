@@ -4,7 +4,7 @@ Date: 2014-09-23 20:04:59
 Type: feature
 Priority: 3
 Weight: 3
-Status: test
+Status: fixed
 Assigned to: Olaf Ohlenmacher
 
 cfg = GitConfigParser(['/home/olf/.gitconfig', repo_dir + '.git/config'])
