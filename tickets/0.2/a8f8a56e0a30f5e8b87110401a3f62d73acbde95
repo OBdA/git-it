@@ -1,0 +1,9 @@
+Subject: replace 'git config' with self.get_cfg()
+Issuer: Olaf Ohlenmacher <olf@obda.de>
+Date: 2014-10-16 23:14:11
+Type: issue
+Priority: 3
+Weight: 2
+Status: open
+Assigned to: -
+
