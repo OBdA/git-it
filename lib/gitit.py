@@ -319,7 +319,7 @@ class Gitit:
 
         # Create a fresh ticket
         try:
-            i = ticket.create_interactive()
+            i = ticket.create_interactive(self._gitcfg)
         except KeyboardInterrupt:
             print ''
             print 'aborting new ticket'

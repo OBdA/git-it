@@ -45,15 +45,25 @@ def ask_for_pattern(message, pattern = None, default=None):
 #
 # Helper functions for creating new tickets interactively or from file
 #
-def create_interactive():
+def create_interactive(git_cfg):
     # First, do some checks to error early
-    fullname = os.popen('git config user.name').read().strip()
-    email = os.popen('git config user.email').read().strip()
-    if not fullname:
-        log.printerr('author name not set. use "git config [--global] user.name \'John Smith\'" to set the fullname')
+    try:
+        fullname = git_cfg.get('user', 'name')
+    except Exception as e:
+        log.printerr("""Author name not set. Use
+
+    git config [--global] user.name "John Smith"
+
+to set the fullname""")
         return
-    if not fullname:
-        log.printerr('author name not set. use "git config [--global] user.name \'John Smith\'" to set the fullname')
+    try:
+        email = git_cfg.get('user', 'email')
+    except Exception as e:
+        log.printerr("""Email address not set. Use
+
+        git config [--global] user.email "john@smith.org"
+
+to set the email address""")
         return
 
     i = Ticket()
