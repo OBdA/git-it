@@ -5,7 +5,7 @@ Type: bug
 Priority: 2
 Weight: 5
 Status: open
-Assigned to: -
+Assigned to: Olaf Ohlenmacher
 
 $ it sync
 Switched to branch 'git-it'
