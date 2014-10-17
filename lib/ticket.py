@@ -215,8 +215,7 @@ class Ticket:
         self.release = it.UNCATEGORIZED
         self.working_dir = Repo().working_dir
 
-    def is_mine(self):
-        fullname = os.popen('git config user.name').read().strip()
+    def is_mine(self, fullname):
         return self.assigned_to == fullname
 
     def oneline(self, cols, annotate_ownership):

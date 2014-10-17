@@ -445,6 +445,7 @@ class Gitit:
 
         print_count = 0
         releasedirs.sort(cmp_by_release_dir)
+        fullname = self.get_cfg('name', section='user', default='Anonymous')
         for _, _, sha, rel in releasedirs:
             rel_tree = self.repo.heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
             for dir in rel.split('/'):
@@ -460,7 +461,7 @@ class Gitit:
 
 
             # Store the tickets in the inbox if neccessary
-            inbox += filter(lambda t: t.is_mine(), tickets)
+            inbox += filter(lambda t: t.is_mine(fullname), tickets)
             
             print_count += self.__print_ticket_rows(rel, tickets, show_types, True, True)
 
