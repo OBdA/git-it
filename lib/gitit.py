@@ -360,8 +360,11 @@ class Gitit:
         print_count = 0
         
         # Get the available terminal drawing space
-        _, width = os.popen('stty size').read().strip().split()
-        width = int(width)
+        try:
+            width, _ = os.get_terminal_size()
+        except Exception:
+            _, width = os.popen('stty size').read().strip().split()
+            width = int(width)
 
         total = sum([t.weight for t in tickets if t.status != 'rejected']) * 1.0
         done = sum([t.weight for t in tickets if t.status not in ['open', 'rejected', 'test']]) * 1.0
