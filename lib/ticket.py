@@ -45,15 +45,25 @@ def ask_for_pattern(message, pattern = None, default=None):
 #
 # Helper functions for creating new tickets interactively or from file
 #
-def create_interactive():
+def create_interactive(git_cfg):
     # First, do some checks to error early
-    fullname = os.popen('git config user.name').read().strip()
-    email = os.popen('git config user.email').read().strip()
-    if not fullname:
-        log.printerr('author name not set. use "git config [--global] user.name \'John Smith\'" to set the fullname')
+    try:
+        fullname = git_cfg.get('user', 'name')
+    except Exception as e:
+        log.printerr("""Author name not set. Use
+
+    git config [--global] user.name "John Smith"
+
+to set the fullname""")
         return
-    if not fullname:
-        log.printerr('author name not set. use "git config [--global] user.name \'John Smith\'" to set the fullname')
+    try:
+        email = git_cfg.get('user', 'email')
+    except Exception as e:
+        log.printerr("""Email address not set. Use
+
+        git config [--global] user.email "john@smith.org"
+
+to set the email address""")
         return
 
     i = Ticket()
@@ -102,17 +112,17 @@ def create_from_lines(array_with_lines, id = None, release = None, backward_comp
         # skip comment lines
         if line.startswith('#'):
             continue
-        
+
         # when we're in the body, just append lines
         if in_body or line.strip() == '':
             in_body = True
             ticket[None] += line + os.linesep
             continue
-        
+
         pos = line.find(':')
         if pos < 0:
             raise MalformedTicketFieldException, 'Cannot parse field "%s".' % line
-        
+
         key = line[:pos].strip()
         val = line[pos+1:].strip()
         ticket[key] = val
@@ -205,8 +215,7 @@ class Ticket:
         self.release = it.UNCATEGORIZED
         self.working_dir = Repo().working_dir
 
-    def is_mine(self):
-        fullname = os.popen('git config user.name').read().strip()
+    def is_mine(self, fullname):
         return self.assigned_to == fullname
 
     def oneline(self, cols, annotate_ownership):

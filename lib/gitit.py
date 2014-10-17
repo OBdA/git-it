@@ -88,10 +88,7 @@ class Gitit:
         except IndexError:
             pass
 
-        self._gitcfg = GitConfigParser([
-            os.path.join(os.environ['HOME'], '.gitconfig'),
-            os.path.join(self.repo.git_dir, 'config')
-        ])
+        self._gitcfg = self.repo.config_reader()
 
 
     def get_cfg(self, key, section='core', default=None):
@@ -319,7 +316,7 @@ class Gitit:
 
         # Create a fresh ticket
         try:
-            i = ticket.create_interactive()
+            i = ticket.create_interactive(self._gitcfg)
         except KeyboardInterrupt:
             print ''
             print 'aborting new ticket'
@@ -363,8 +360,11 @@ class Gitit:
         print_count = 0
         
         # Get the available terminal drawing space
-        _, width = os.popen('stty size').read().strip().split()
-        width = int(width)
+        try:
+            width, _ = os.get_terminal_size()
+        except Exception:
+            _, width = os.popen('stty size').read().strip().split()
+            width = int(width)
 
         total = sum([t.weight for t in tickets if t.status != 'rejected']) * 1.0
         done = sum([t.weight for t in tickets if t.status not in ['open', 'rejected', 'test']]) * 1.0
@@ -448,6 +448,7 @@ class Gitit:
 
         print_count = 0
         releasedirs.sort(cmp_by_release_dir)
+        fullname = self.get_cfg('name', section='user', default='Anonymous')
         for _, _, sha, rel in releasedirs:
             rel_tree = self.repo.heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
             for dir in rel.split('/'):
@@ -463,7 +464,7 @@ class Gitit:
 
 
             # Store the tickets in the inbox if neccessary
-            inbox += filter(lambda t: t.is_mine(), tickets)
+            inbox += filter(lambda t: t.is_mine(fullname), tickets)
             
             print_count += self.__print_ticket_rows(rel, tickets, show_types, True, True)
 
@@ -553,7 +554,7 @@ class Gitit:
 
         curr_branch = self.repo.active_branch.name
         self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-        fullname = os.popen('git config user.name').read().strip()
+        fullname = self.get_cfg('name', section='user', default='Anonymous')
         msg = 'ticket \'%s\' taken by %s' % (sha7, fullname)
         i.assigned_to = fullname
         i.save()
