@@ -4,7 +4,7 @@ Date: 2014-10-16 23:14:11
 Type: issue
 Priority: 3
 Weight: 2
-Status: open
+Status: fixed
 Assigned to: Olaf Ohlenmacher
 
 lib/ticket.py:50:  fullname = os.popen('git config user.name').read().strip()
