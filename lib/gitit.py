@@ -546,24 +546,29 @@ class Gitit:
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(fullsha, 7)
         if i.status == 'open':
-            log.printerr('ticket \'%s\' already open' % sha7)
+            log.printerr("ticket '%s' already open" % sha7)
             sys.exit(1)
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
         curr_branch = self.repo.active_branch.name
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+        curr_dir = os.getcwd()
         msg = 'ticket \'%s\' reopened' % sha7
-        i.status = 'open'
-        i.save()
-        #FIXME: from_root=True?
-        #self.repo.git.commit(['-m', msg, match], from_root=True)
-        self.repo.git.commit(['-m', msg, match])
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
-        misc.rmdirs(abs_ticket_dir)
-        print 'ticket \'%s\' reopened' % sha7
+
+        try:
+            os.chdir(self.repo.working_dir)
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+            i.status = 'open'
+            i.save()
+            self.repo.git.commit(['-m', msg, match])
+            print msg
+
+        finally:
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+            self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
+            misc.rmdirs(abs_ticket_dir)
+            os.chdir(curr_dir)
 
 
     def take_ticket(self, sha):
