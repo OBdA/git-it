@@ -489,8 +489,14 @@ class Gitit:
 
     def rm(self, sha):
         match = self.match_or_error(sha)
-        print match
-        raw_input()
+        print "remove permanently '%s'" % match
+        print "(press CTRL-C to abort...)"
+        try:
+            raw_input()
+        except KeyboardInterrupt:
+            log.printerr("Abort!")
+            sys.exit(1)
+
         _, basename = os.path.split(match)
         sha7 = misc.chop(basename, 7)
 
