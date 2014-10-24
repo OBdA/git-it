@@ -510,10 +510,10 @@ class Gitit:
 
     def get_ticket(self, sha):
         match = self.match_or_error(sha)
-        contents = self.repo.git.cat_file(['-p', it.ITDB_BRANCH + ':' + match])
         parent, fullsha = os.path.split(match)
         rel = os.path.basename(parent)
-        sha7 = misc.chop(fullsha, 7)
+
+        contents = self.repo.git.cat_file(['-p', it.ITDB_BRANCH + ':' + match])
         i = ticket.create_from_lines(contents.split("\n"), fullsha, rel, True)
         return (i, rel, fullsha, match)
 
