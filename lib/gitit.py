@@ -618,6 +618,7 @@ class Gitit:
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
 
         try:
+            os.chdir(self.repo.working_dir)
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
             i.assigned_to = '-'
             i.save()
