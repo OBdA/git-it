@@ -500,18 +500,26 @@ class Gitit:
         _, basename = os.path.split(match)
         sha7 = misc.chop(basename, 7)
 
-        # Commit the new itdb to the repo
+        # prepare the critical section
         curr_branch = self.repo.active_branch.name
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-        msg = 'removed ticket \'%s\'' % sha7
-        #FIXME: from_root=True: needed with Repo().git.commit()?
-        #self.repo.git.commit(['-m', msg, match], from_root=True)
-        self.repo.git.commit(['-m', msg, match])
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+        curr_dir = os.getcwd()
+        msg = "removed ticket '%s'" % sha7
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
-        misc.rmdirs(abs_ticket_dir)
-        print 'ticket \'%s\' removed'% sha7
+
+        # Commit the new itdb to the repo
+        try:
+            os.chdir(self.repo.working_dir)
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+            self.repo.git.commit(['-m', msg, match])
+            print "ticket '%s' removed" % sha7
+        except Exception:
+            log.printerr("error commiting change!")
+            sys.exit(1)
+        finally:
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+            self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
+            misc.rmdirs(abs_ticket_dir)
+            os.chdir(curr_dir)
 
 
     def get_ticket(self, sha):
