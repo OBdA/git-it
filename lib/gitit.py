@@ -632,4 +632,4 @@ class Gitit:
             misc.rmdirs(abs_ticket_dir)
             os.chdir(curr_dir)
 
-
+#EOF
