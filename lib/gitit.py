@@ -550,22 +550,33 @@ class Gitit:
 
     def take_ticket(self, sha):
         i, _, fullsha, match = self.get_ticket(sha)
-        sha7 = misc.chop(sha, 7)
-
-        curr_branch = self.repo.active_branch.name
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+        sha7 = misc.chop(fullsha, 7)
         fullname = self.get_cfg('name', section='user', default='Anonymous')
-        msg = 'ticket \'%s\' taken by %s' % (sha7, fullname)
-        i.assigned_to = fullname
-        i.save()
-        #FIXME: from_root=True?
-        #self.repo.git.commit(['-m', msg, match], from_root=True)
-        self.repo.git.commit(['-m', msg, '--', match])
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+        if i.assigned_to == fullname:
+            print 'ticket %s already taken by "%s"' % (sha7, fullname)
+            return
+
+        msg = 'ticket %s taken by "%s"' % (sha7, fullname)
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
-        misc.rmdirs(abs_ticket_dir)
-        print 'ticket \'%s\' taken' % sha7
+
+        # prepare for critical section
+        curr_branch = self.repo.active_branch.name
+        curr_dir = os.getcwd()
+
+        try:
+            os.chdir(self.repo.working_dir)
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+            i.assigned_to = fullname
+            i.save()
+            self.repo.git.commit(['-m', msg, '--', match])
+            print 'ticket %s taken' % sha7
+        except Exception:
+            print 'error commiting change -- cleanup'
+        finally:
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+            self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
+            misc.rmdirs(abs_ticket_dir)
+            os.chdir(curr_dir)
 
     def leave_ticket(self, sha):
         i, _, fullsha, match = self.get_ticket(sha)
