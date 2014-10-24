@@ -569,7 +569,7 @@ class Gitit:
             i.assigned_to = fullname
             i.save()
             self.repo.git.commit(['-m', msg, '--', match])
-            print 'ticket %s taken' % sha7
+            print msg
         except Exception:
             print 'error commiting change -- cleanup'
         finally:
