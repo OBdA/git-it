@@ -527,7 +527,7 @@ class Gitit:
     
     def reopen_ticket(self, sha):
         i, _, fullsha, match = self.get_ticket(sha)
-        sha7 = misc.chop(sha, 7)
+        sha7 = misc.chop(fullsha, 7)
         if i.status == 'open':
             log.printerr('ticket \'%s\' already open' % sha7)
             sys.exit(1)
