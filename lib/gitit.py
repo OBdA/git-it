@@ -522,24 +522,30 @@ class Gitit:
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(fullsha, 7)
         if i.status not in ['open', 'test']:
-            log.printerr('ticket \'%s\' already %s' % (sha7, i.status))
+            log.printerr("ticket '%s' already %s" % (sha7, i.status))
             sys.exit(1)
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
         curr_branch = self.repo.active_branch.name
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-        i.status = new_status
-        msg = '%s ticket \'%s\'' % (i.status, sha7)
-        i.save()
-        #FIXME: from_root=True: needed?
-        #self.repo.git.commit(['-m', msg, match], from_root=True)
-        self.repo.git.commit(['-m', msg, match])
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+        curr_dir = os.getcwd()
+        msg = "%s ticket '%s'" % (i.status, sha7)
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
-        misc.rmdirs(abs_ticket_dir)
-        print 'ticket \'%s\' %s' % (sha7, new_status)
+
+        try:
+            os.chdir(self.repo.working_dir)
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+            i.status = new_status
+            i.save()
+            self.repo.git.commit(['-m', msg, match])
+            print "ticket '%s' now %s" % (sha7, new_status)
+        except Exception:
+            log.printerr("error commiting changes to ticket '%s'" % sha7)
+        finally:
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+            self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
+            misc.rmdirs(abs_ticket_dir)
+            os.chdir(curr_dir)
 
 
     def reopen_ticket(self, sha):
