@@ -580,20 +580,31 @@ class Gitit:
 
     def leave_ticket(self, sha):
         i, _, fullsha, match = self.get_ticket(sha)
-        sha7 = misc.chop(sha, 7)
+        sha7 = misc.chop(fullsha, 7)
+        fullname = self.get_cfg('name', section='user', default='Anonymous')
 
+        if i.assigned_to == '-':
+            print 'ticket %s already left alone' % (sha7)
+            return
+
+        # prepare for the critical section
         curr_branch = self.repo.active_branch.name
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-        msg = 'ticket \'%s\' left alone' % sha7
-        i.assigned_to = '-'
-        i.save()
-        #FIXME: from_root=True?
-        #self.repo.git.commit(['-m', msg, match], from_root=True)
-        self.repo.git.commit(['-m', msg, match])
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+        curr_dir = os.getcwd()
+        msg = 'ticket %s was left alone from "%s"' % (sha7, fullname)
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
-        misc.rmdirs(abs_ticket_dir)
-        print 'ticket \'%s\' taken' % sha7
+
+        try:
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+            i.assigned_to = '-'
+            i.save()
+            self.repo.git.commit(['-m', msg, match])
+            print msg
+        except Exception:
+            print 'error commiting change -- cleanup'
+        finally:
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+            self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
+            misc.rmdirs(abs_ticket_dir)
+            os.chdir(curr_dir)
     
 
