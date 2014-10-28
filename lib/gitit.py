@@ -93,6 +93,7 @@ class Gitit:
         except IndexError:
             pass
 
+        # get config reader direct from git.Repo()
         self._gitcfg = self.repo.config_reader()
 
 
