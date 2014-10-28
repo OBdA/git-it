@@ -316,9 +316,13 @@ class Gitit:
 
         # now we may sync the git-it branch safely!
         curr = self.repo.active_branch.name
-        os.system('git checkout git-it')
-        os.system('git pull')
-        os.system('git checkout \'%s\'' % curr)
+        try:
+            os.system('git checkout git-it')
+            os.system('git pull')
+        except Exception:
+            log.printerr("error commiting changes to ticket '%s'" % sha7)
+        finally:
+            os.system('git checkout \'%s\'' % curr)
 
 
     def new(self):
