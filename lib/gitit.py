@@ -342,20 +342,25 @@ class Gitit:
         # Save the ticket to disk
         i.save()
         sha7 = misc.chop(ticketname, 7)
-        print 'new ticket \'%s\' saved' % sha7
+        print "new ticket '%s' saved" % sha7
 
         # Commit the new ticket to the 'aaa' branch
         curr_branch = self.repo.active_branch.name
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-        self.repo.git.add([i.filename()])
         msg = '%s added ticket \'%s\'' % (i.issuer, sha7)
-        self.repo.git.commit(['-m', msg, i.filename()])
-        os.remove(i.filename())
-        self.repo.git.rm(['--cached', i.filename()])
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
-        misc.rmdirs(abs_ticket_dir)
+
+        try:
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+            self.repo.git.add([i.filename()])
+            self.repo.git.commit(['-m', msg, i.filename()])
+        except:
+            log.printerr("error commiting changes to ticket '%s'" % sha7)
+        finally:
+            os.remove(i.filename())
+            self.repo.git.rm(['--cached', i.filename()])
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+            self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
+            misc.rmdirs(abs_ticket_dir)
         return i
 
 
