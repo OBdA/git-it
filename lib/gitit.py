@@ -245,15 +245,20 @@ class Gitit:
                 # Now, when the edit has succesfully taken place, switch branches, commit,
                 # and switch back
                 curr_branch = self.repo.active_branch.name
-                self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
                 msg = 'ticket \'%s\' edited' % sha7
-                i.save()
-                self.repo.git.commit(['-m', msg, i.filename()])
-                self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
                 abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-                self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
-                misc.rmdirs(abs_ticket_dir)
-                print 'ticket \'%s\' edited succesfully' % sha7
+                try:
+                    self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+                    i.save()
+                    self.repo.git.commit(['-m', msg, i.filename()])
+                    print 'ticket \'%s\' edited succesfully' % sha7
+                except Exception:
+                    log.printerr("error commiting modified ticket.")
+
+                finally:
+                    self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+                    self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
+                    misc.rmdirs(abs_ticket_dir)
             else:
                 print 'editing of ticket \'%s\' cancelled' % sha7
         else:
