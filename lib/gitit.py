@@ -165,6 +165,8 @@ class Gitit:
             log.printerr('%s: Not a valid Git repository.'%gitrepo)
             return
 
+        #FIXME: use working_dir directly instead of assuming 'git_repo'
+        #       is work_dir/.git
         parent, _ = os.path.split(gitrepo)
         ticket_dir = os.path.join(parent, it.TICKET_DIR)
         hold_file = os.path.join(ticket_dir, it.HOLD_FILE)
