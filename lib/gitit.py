@@ -210,7 +210,7 @@ class Gitit:
             log.printerr('no such ticket')
             sys.exit(1)
         elif len(matches) > 1:
-            log.printerr('ambiguous match critiria. the following tickets match:')
+            log.printerr('ambiguous match criteria. the following tickets match:')
             for match in matches:
                 _, id = os.path.split(match)
                 log.printerr(id)
