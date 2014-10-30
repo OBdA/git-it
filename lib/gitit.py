@@ -231,38 +231,42 @@ class Gitit:
                 self.get_cfg('editor', default='vim') + ' "%s"' % filename
         ) == 0
         timestamp2 = os.path.getmtime(filename)
-        if success:
-            if timestamp1 < timestamp2:
-                try:
-                    i = ticket.create_from_file(filename, fullsha, rel)
-                except ticket.MalformedTicketFieldException, e:
-                    print 'Error parsing ticket: %s' % e
-                    sys.exit(1)
-                except ticket.MissingTicketFieldException, e:
-                    print 'Error parsing ticket: %s' % e
-                    sys.exit(1)
-
-                # Now, when the edit has succesfully taken place, switch branches, commit,
-                # and switch back
-                curr_branch = self.repo.active_branch.name
-                msg = 'ticket \'%s\' edited' % sha7
-                abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
-                try:
-                    self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-                    i.save()
-                    self.repo.git.commit(['-m', msg, i.filename()])
-                    print 'ticket \'%s\' edited succesfully' % sha7
-                except Exception:
-                    log.printerr("error commiting modified ticket.")
-
-                finally:
-                    self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
-                    self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
-                    misc.rmdirs(abs_ticket_dir)
-            else:
-                print 'editing of ticket \'%s\' cancelled' % sha7
-        else:
+        if not success:
             log.printerr('editing of ticket \'%s\' failed' % sha7)
+            os.remove(filename)
+            sys.exit(1)
+
+        if timestamp1 >= timestamp2:
+            print 'editing of ticket \'%s\' cancelled' % sha7
+            os.remove(filename)
+            return
+
+        try:
+            i = ticket.create_from_file(filename, fullsha, rel)
+        except ticket.MalformedTicketFieldException, e:
+            print 'Error parsing ticket: %s' % e
+            sys.exit(1)
+        except ticket.MissingTicketFieldException, e:
+            print 'Error parsing ticket: %s' % e
+            sys.exit(1)
+
+        # Now, when the edit has succesfully taken place, switch branches, commit,
+        # and switch back
+        curr_branch = self.repo.active_branch.name
+        msg = 'ticket \'%s\' edited' % sha7
+        abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
+        try:
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+            i.save()
+            self.repo.git.commit(['-m', msg, i.filename()])
+            print 'ticket \'%s\' edited succesfully' % sha7
+        except Exception:
+            log.printerr("error commiting modified ticket.")
+
+        finally:
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+            self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
+            misc.rmdirs(abs_ticket_dir)
 
         # Remove the temporary file
         os.remove(filename)
