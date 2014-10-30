@@ -289,27 +289,30 @@ class Gitit:
             misc.mkdirs(target_dir)
 
         # Try to move the file into it
+        curr_branch = self.repo.active_branch.name
+        msg = "moved ticket '%s' (%s --> %s)" % (sha7, rel, to_rel)
+        abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
         try:
             # Commit the new itdb to the repo
-            curr_branch = self.repo.active_branch.name
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
 
             i.save(target_path)
             if os.path.isfile(src_path):
                 os.remove(src_path)
 
-            msg = 'moved ticket \'%s\' (%s --> %s)' % (sha7, rel, to_rel)
             self.repo.git.add([target_path])
             self.repo.git.commit(['-m', msg, src_path, target_path])
+            print "ticket '%s' moved to release '%s'" % (sha7, to_rel)
+        except OSError as e:
+            log.printerr("could not move ticket '%s' to '%s':" % (sha7, to_rel))
+            log.printerr(e)
+        except Exception:
+            log.printerr("could not move ticket '%s' to '%s':" % (sha7, to_rel))
+
+        finally:
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
-            abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
             self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
             misc.rmdirs(abs_ticket_dir)
-
-            print 'ticket \'%s\' moved to release \'%s\'' % (sha7, to_rel)
-        except OSError, e:
-            log.printerr('could not move ticket \'%s\' to \'%s\':' % (sha7, to_rel))
-            log.printerr(e)
 
 
     def show(self, sha):
