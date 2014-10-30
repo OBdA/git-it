@@ -7,8 +7,4 @@ Weight: 6
 Status: closed
 Assigned to: Olaf Ohlenmacher
 
-Directory structure ist in branch 'git-it':
-
-	./tickets/<release>/<hashkey>
-
-Implement new subcommand 'move' to assign ticket to another release.
+This command was already implemented.
