@@ -200,12 +200,8 @@ class Gitit:
         """
         self.require_itdb()
 
-        # search files from ITDB_BRANCH:TICKET_DIR
-        files = [(x.mode, x.type, x.hexsha, x.path)
-                for x in self.itdb_tree.list_traverse()]
-
         matches = []
-        for _, _, _, path in files:
+        for path in [x.path for x in self.itdb_tree.list_traverse()]:
             _, file = os.path.split(path)
             if file.startswith(sha):
                 matches.append(path)
