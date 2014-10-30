@@ -170,24 +170,29 @@ class Gitit:
         parent, _ = os.path.split(gitrepo)
         ticket_dir = os.path.join(parent, it.TICKET_DIR)
         hold_file = os.path.join(ticket_dir, it.HOLD_FILE)
-        misc.mkdirs(ticket_dir)
-        misc.write_file_contents(hold_file, \
-                     'This is merely a placeholder file for git-it that prevents ' + \
-                     'this directory from\nbeing pruned by Git.')
-
-        # Commit the new itdb to the repo
         curr_branch = self.repo.active_branch.name
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-        self.repo.git.add([hold_file])
         msg = 'Initialized empty ticket database.'
-        self.repo.git.commit(['-m', msg, hold_file])
-        os.remove(hold_file)
-        os.rmdir(ticket_dir)
-        self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
         abs_ticket_dir = os.path.join( self.repo.working_dir, it.TICKET_DIR)
-        self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
-        misc.rmdirs(abs_ticket_dir)
-        print 'Initialized empty ticket database.'
+        try:
+            misc.mkdirs(ticket_dir)
+            misc.write_file_contents(hold_file, \
+                         'This is merely a placeholder file for git-it that prevents ' + \
+                         'this directory from\nbeing pruned by Git.')
+
+            # Commit the new itdb to the repo
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
+            self.repo.git.add([hold_file])
+            self.repo.git.commit(['-m', msg, hold_file])
+            print 'Initialized empty ticket database.'
+        except Exception:
+            log.printerr("error initialising ticket database.")
+
+        finally:
+            os.remove(hold_file)
+            os.rmdir(ticket_dir)
+            self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
+            self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
+            misc.rmdirs(abs_ticket_dir)
 
 
     def match_or_error(self, sha):
