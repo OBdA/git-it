@@ -4,7 +4,7 @@ Date: 2014-10-14 18:00:20
 Type: bug
 Priority: 2
 Weight: 5
-Status: open
+Status: fixed
 Assigned to: Olaf Ohlenmacher
 
 $ it sync
