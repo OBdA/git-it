@@ -330,6 +330,10 @@ class Gitit:
             print 'current working tree has uncommitted changes. aborting.'
             sys.exit(1)
 
+        # check we have tracking information about the ticket database
+        # + check for origin in ...remotes
+        # + use remote.pull(refspec) to pull changes
+
         # now we may sync the git-it branch safely!
         curr = self.repo.active_branch.name
         try:
