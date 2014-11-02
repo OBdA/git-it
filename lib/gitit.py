@@ -330,15 +330,23 @@ class Gitit:
             print 'current working tree has uncommitted changes. aborting.'
             sys.exit(1)
 
-        # check we have tracking information about the ticket database
-        # + check for origin in ...remotes
-        # + use remote.pull(refspec) to pull changes
+        remote = 'origin'
+        remote_path = remote +'/'+ it.ITDB_BRANCH
+
+        try:
+            # check we have a remote branch available
+            if remote_path not in [x.name for x in self.repo.remotes[remote].refs]:
+                print 'no remote branch to pull from %s' % remote_path
+                return
+        except AssertionError as e:
+            print 'no remote branch for %s' % remote_path
+            return
 
         # now we may sync the git-it branch safely!
         curr = self.repo.active_branch.name
         try:
             self.repo.git.checkout([it.ITDB_BRANCH])
-            self.repo.remotes['origin'].pull(it.ITDB_BRANCH +':'+ it.ITDB_BRANCH)
+            self.repo.remotes[remote].pull()
         except Exception as e:
             log.printerr("error pulling changes to ticket database: %s" % e)
         finally:
