@@ -50,20 +50,24 @@ def create_interactive(git_cfg):
     try:
         fullname = git_cfg.get('user', 'name')
     except Exception as e:
-        log.printerr("""Author name not set. Use
+        log.printerr("""
+Author name not set. Use
 
     git config [--global] user.name "John Smith"
 
-to set the fullname""")
+to set the fullname.
+""")
         return
     try:
         email = git_cfg.get('user', 'email')
     except Exception as e:
-        log.printerr("""Email address not set. Use
+        log.printerr("""
+Email address not set. Use
 
         git config [--global] user.email "john@smith.org"
 
-to set the email address""")
+to set the email address.
+""")
         return
 
     i = Ticket()
@@ -278,8 +282,10 @@ class Ticket:
             color_field = 'red-on-white'
         if not color_value:
             color_value = 'default'
-        print '%s%s:%s %s%s%s' % (colors.colors[color_field], field, colors.colors['default'], \
-                                                            colors.colors[color_value], value, colors.colors['default'])
+        print("%s%s:%s %s%s%s" %
+                (colors.colors[color_field], field, colors.colors['default'], \
+                colors.colors[color_value], value, colors.colors['default'])
+        )
 
     def print_ticket(self, fullsha = None):
         if fullsha:
@@ -293,8 +299,8 @@ class Ticket:
         self.print_ticket_field('Status', self.status, None, self.status_colors[self.status])
         self.print_ticket_field('Assigned to', self.assigned_to)
         self.print_ticket_field('Release', self.release)
-        print ''
-        print self.body
+        print('')
+        print(self.body)
 
     def filename(self):
         file = os.path.join(self.working_dir, it.TICKET_DIR, self.release, self.id)
