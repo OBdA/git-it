@@ -14,30 +14,32 @@ import log
 __version__ = '0.2-dev'
 
 def usage():
-    print 'usage: it <subcommand> [<options>]'
-    print ''
-    print 'Valid subcommands are:'
-    print '  init      Initializes an area for storing issues.'
-    print '  list      Shows a list of all issues.'
-    print '  show      Shows details of a specific issue.'
-    print '  new       Adds a new issue.'
-    print '  edit      Edits an existing issue.'
-    print '  rm -f     Removes an existing ticket.'
-    print '  mv        Moves the given ticket to a release.'
-    print '  sync      Retrieves all remote ticket changes.'
-    print ''
-    print 'Taking responsibility:'
-    print '  take      Take responsibility for this ticket and put it'
-    print '            in your INBOX (i.e. assign it to yourself).'
-    print '  leave     Let go responsibility for this ticket and remove'
-    print '            it from your INBOX.'
-    print ''
-    print 'Changing status:'
-    print '  test      Mark a ticket as to-test.'
-    print '  close     Mark a ticket as closed.'
-    print '  fix       Mark a ticket as fixed.'
-    print '  reject    Mark a ticket as rejected.'
-    print '  reopen    Reopens an issue.'
+    print("""
+Usage: it <subcommand> [<options>]
+
+Valid subcommands are:
+  init      Initializes an area for storing issues.
+  list      Shows a list of all issues.
+  show      Shows details of a specific issue.
+  new       Adds a new issue.
+  edit      Edits an existing issue.
+  rm -f     Removes an existing ticket.
+  mv        Moves the given ticket to a release.
+  sync      Retrieves all remote ticket changes.
+
+Taking responsibility:
+  take      Take responsibility for this ticket and put it
+            in your INBOX (i.e. assign it to yourself).
+  leave     Let go responsibility for this ticket and remove
+            it from your INBOX.
+
+Changing status:
+  test      Mark a ticket as to-test.
+  close     Mark a ticket as closed.
+  fix       Mark a ticket as fixed.
+  reject    Mark a ticket as rejected.
+  reopen    Reopens an issue.
+""")
 
 # Parse input options
 opts = []
@@ -57,12 +59,12 @@ for key, val in opts:
         usage()
         sys.exit(0)
     if key in [ '-v' ]:
-        print('git-it %s' % __version__)
+        print("git-it %s" % __version__)
         sys.exit(0)
 
 # No subcommand?
 if len(params) == 0:
-    log.printerr('No subcommand specified.')
+    log.printerr("No subcommand specified.")
     usage()
     sys.exit(1)
 
@@ -70,7 +72,7 @@ if len(params) == 0:
 subcmd = params[0]
 del params[0]
 if not subcmd in [ 'init', 'list', 'show', 'new', 'edit', 'mv', 'rm', 'reopen', 'close', 'fix', 'reject', 'test', 'take', 'leave', 'sync' ]:
-    log.printerr('Unknown subcommand \'%s\'.' % subcmd)
+    log.printerr("Unknown subcommand '%s'." % subcmd)
     usage()
     sys.exit(1)
 
@@ -92,63 +94,65 @@ elif subcmd == 'list':
     g.list(types, releases)
 elif subcmd == 'edit':
     if len(params) != 1:
-        log.printerr('usage: it edit <id>')
+        log.printerr("Usage: it edit <id>")
         sys.exit(1)
     g.edit(params[0])
 elif subcmd == 'show':
     if len(params) != 1:
-        log.printerr('usage: it show <id>')
+        log.printerr("Usage: it show <id>")
         sys.exit(1)
     g.show(params[0])
 elif subcmd == 'mv':
     if len(params) != 2:
-        log.printerr('usage: it mv <id> <release>')
+        log.printerr("Usage: it mv <id> <release>")
         sys.exit(1)
     g.mv(params[0], params[1])
 elif subcmd == 'rm':
     if len(params) != 2 or params[0] != '-f':
-        log.printerr('tickets can be closed with either of the following subcommands:')
-        log.printerr('  fix')
-        log.printerr('  reject')
-        log.printerr('  close')
-        log.printerr('')
-        log.printerr('to permanently remove a ticket instead of closing it, use:')
-        log.printerr('  it rm -f <id>')
+        log.printerr("""
+Tickets can be closed with either of the following subcommands:
+  fix
+  reject
+  close
+
+To permanently remove a ticket instead of closing it, use:
+  it rm -f <id>
+""")
         sys.exit(1)
     g.rm(params[1])
 elif subcmd == 'close':
     if len(params) != 1:
-        log.printerr('usage: it close <id>')
+        log.printerr("Usage: it close <id>")
         sys.exit(1)
     g.finish_ticket(params[0], 'closed')
 elif subcmd == 'fix':
     if len(params) != 1:
-        log.printerr('usage: it fix <id>')
+        log.printerr("Usage: it fix <id>")
         sys.exit(1)
     g.finish_ticket(params[0], 'fixed')
 elif subcmd == 'reject':
     if len(params) != 1:
-        log.printerr('usage: it close <id>')
+        log.printerr("Usage: it close <id>")
         sys.exit(1)
     g.finish_ticket(params[0], 'rejected')
 elif subcmd == 'test':
     if len(params) != 1:
-        log.printerr('usage: it test <id>')
+        log.printerr("Usage: it test <id>")
         sys.exit(1)
     g.finish_ticket(params[0], 'test')
 elif subcmd == 'reopen':
     if len(params) != 1:
-        log.printerr('usage: it reopen <id>')
+        log.printerr("Usage: it reopen <id>")
         sys.exit(1)
     g.reopen_ticket(params[0])
 elif subcmd == 'take':
     if len(params) != 1:
-        log.printerr('usage: it take <id>')
+        log.printerr("Usage: it take <id>")
         sys.exit(1)
     g.take_ticket(params[0])
 elif subcmd == 'leave':
     if len(params) != 1:
-        log.printerr('usage: it leave <id>')
+        log.printerr("Usage: it leave <id>")
         sys.exit(1)
     g.leave_ticket(params[0])
 elif subcmd == 'sync':
