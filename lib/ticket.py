@@ -164,9 +164,8 @@ def create_from_string(content, id = None, release = None, backward_compatible =
     return create_from_lines(lines, id, release, backward_compatible)
 
 def create_from_file(filename, overwrite_id = None, overwrite_release = None):
-    if (overwrite_id and not overwrite_release) or (overwrite_release and not overwrite_id):
-        log.printerr('program error: specify both an alternative ID and alternative release or neither')
-        return
+    if bool(overwrite_id) ^ bool(overwrite_release):
+        raise Exception("specify alternative id AND alternative release OR neither")
 
     if overwrite_id:
         id = overwrite_id
