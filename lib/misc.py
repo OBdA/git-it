@@ -23,7 +23,7 @@ def rmdirs(dir):
         return True
 
     if not os.path.isdir(dir):
-        log.printerr('\'%s\': not a directory' % dir)
+        log.printerr("'%s': not a directory" % dir)
         return False
 
     # First, remove all children of dir
@@ -37,16 +37,16 @@ def rmdirs(dir):
         else:
             try:
                 os.remove(full)
-            except OSError, e:
-                log.printerr('could not remove file \'%s\'' % full)
+            except OSError as e:
+                log.printerr("Could not remove file '%s'" % full)
                 ok = False
 
     # Finally, remove the empty dir itself
     if ok:
         try:
             os.rmdir(dir)
-        except OSError, e:
-            log.printerr('could not remove directory \'%s\'' % dir)
+        except OSError as e:
+            log.printerr("Could not remove directory '%s'" % dir)
             ok = False
     return ok
 
@@ -54,8 +54,8 @@ def read_file_contents(filename):
     try:
         f = open(filename, 'r')
         return f.read()
-    except OSError, e:
-        log.printerr('Unable to read file \'%s\'' % filename)
+    except OSError as e:
+        log.printerr("Unable to read file '%s'" % filename)
         return None
 
 def write_file_contents(filename, contents):
@@ -64,7 +64,7 @@ def write_file_contents(filename, contents):
         f.write(contents)
         f.close()
         return True
-    except OSError, e:
-        log.printerr('Unable to write file \'%s\'' % filename)
+    except OSError as e:
+        log.printerr("Unable to write file '%s'" % filename)
         return False
 
