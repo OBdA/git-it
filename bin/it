@@ -71,12 +71,19 @@ if len(params) == 0:
 # Valid subcommand?
 subcmd = params[0]
 del params[0]
-if not subcmd in [ 'init', 'list', 'show', 'new', 'edit', 'mv', 'rm', 'reopen', 'close', 'fix', 'reject', 'test', 'take', 'leave', 'sync' ]:
+if not subcmd in [ 'help', 'version', 'init', 'list', 'show', 'new', 'edit', 'mv', 'rm', 'reopen', 'close', 'fix', 'reject', 'test', 'take', 'leave', 'sync' ]:
     log.printerr("Unknown subcommand '%s'." % subcmd)
     usage()
     sys.exit(1)
 
 # Main logic
+if subcmd == 'help':
+    usage()
+    sys.exit(0)
+if subcmd == 'version':
+    print("git-it %s" % __version__)
+    sys.exit(0)
+
 g = gitit.Gitit()
 if subcmd == 'init':
     g.init()
