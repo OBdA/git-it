@@ -41,26 +41,8 @@ Changing status:
   reopen    Reopens an issue.
 """)
 
-# Parse input options
-opts = []
-params = []
-try:
-    shorts = 'hv'
-    longs  = [ ]
-    opts, params = getopt.getopt(sys.argv[1:], shorts, longs)
-except getopt.GetoptError, e:
-    log.printerr(e)
-    usage()
-    sys.exit(1)
-
-# Set variables according to input options
-for key, val in opts:
-    if key in [ '-h' ]:
-        usage()
-        sys.exit(0)
-    if key in [ '-v' ]:
-        print("git-it %s" % __version__)
-        sys.exit(0)
+# Get command line parameters
+params = sys.argv[1:]
 
 # No subcommand?
 if len(params) == 0:
