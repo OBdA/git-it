@@ -347,8 +347,9 @@ class Gitit:
         try:
             self.repo.git.checkout([it.ITDB_BRANCH])
             self.repo.remotes[remote].pull()
+            self.repo.remotes[remote].push()
         except Exception as e:
-            log.printerr("Error pulling changes to ticket database: %s" % e)
+            log.printerr("Error pulling/pushing to ticket database: %s" % e)
         finally:
             self.repo.git.checkout([curr])
 
