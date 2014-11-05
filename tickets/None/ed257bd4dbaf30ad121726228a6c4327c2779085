@@ -1,4 +1,4 @@
-Subject: test scenario checking all actions on tickets
+Subject: add tests to check action done to tickets
 Issuer: Olaf Ohlenmacher <olf@obda.de>
 Date: 2014-10-24 23:20:47
 Type: task
@@ -7,3 +7,4 @@ Weight: 10
 Status: open
 Assigned to: -
 
++ deb:shelltestrunner
