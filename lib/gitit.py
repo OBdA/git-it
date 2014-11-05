@@ -243,10 +243,10 @@ class Gitit:
 
         try:
             i = ticket.create_from_file(filename, fullsha, rel)
-        except ticket.MalformedTicketFieldException, e:
+        except ticket.MalformedTicketFieldException as e:
             log.printerr("Error parsing ticket: %s" % e)
             sys.exit(1)
-        except ticket.MissingTicketFieldException, e:
+        except ticket.MissingTicketFieldException as e:
             log.printerr("Error parsing ticket: %s" % e)
             sys.exit(1)
 

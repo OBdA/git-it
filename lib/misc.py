@@ -37,7 +37,7 @@ def rmdirs(dir):
         else:
             try:
                 os.remove(full)
-            except OSError, e:
+            except OSError as e:
                 log.printerr("Could not remove file '%s'" % full)
                 ok = False
 
@@ -45,7 +45,7 @@ def rmdirs(dir):
     if ok:
         try:
             os.rmdir(dir)
-        except OSError, e:
+        except OSError as e:
             log.printerr("Could not remove directory '%s'" % dir)
             ok = False
     return ok
@@ -54,7 +54,7 @@ def read_file_contents(filename):
     try:
         f = open(filename, 'r')
         return f.read()
-    except OSError, e:
+    except OSError as e:
         log.printerr("Unable to read file '%s'" % filename)
         return None
 
@@ -64,7 +64,7 @@ def write_file_contents(filename, contents):
         f.write(contents)
         f.close()
         return True
-    except OSError, e:
+    except OSError as e:
         log.printerr("Unable to write file '%s'" % filename)
         return False
 
