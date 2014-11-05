@@ -1,0 +1,23 @@
+# try to initialize it (should fail)
+it init
+>>>2
+Not a valid Git repository.
+>>>=1
+
+# create new git repository
+  git init
+>>>/^Initialized empty Git repository/
+>>>=0
+
+# try to init it with a valid repository
+it init
+>>>
+Initialized empty ticket database.
+>>>=0
+
+# check for the git-it branch
+  git branch
+>>>/git-it$/
+>>>=0
+
+#EOF

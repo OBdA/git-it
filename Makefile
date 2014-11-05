@@ -1,6 +1,9 @@
 #
 # Make file for the git-it project
 #
+
+.PHONY: tests
+
 prefix ?= /usr/local
 
 BIN_DIR=$(prefix)/bin
@@ -31,3 +34,16 @@ archive:
 clean:
 	find lib -type f -name '*.pyc' -exec rm {} \;
 	rm -f git-it.tar.gz
+
+tests:
+	@for dir in $(PWD)/tests/*; do \
+		echo === $$dir; \
+		prepare_test_dir=$$(readlink -e bin/prepare-test-dir); \
+		exec_it=$$(readlink -e bin/it); \
+		: set -x; \
+		( cd $$($$prepare_test_dir $$dir) \
+		  && shelltest -w $$exec_it "$$dir" -- --hide-successes ; \
+		) ; \
+	done
+
+#EOF

@@ -1,0 +1,24 @@
+#! /bin/sh
+
+# Depends on
+# + installed git
+# + git repository
+
+BASE=/tmp/test-it
+TEST_DIR=$(readlink -m "$1")
+if [ ! -d "$TEST_DIR" ]; then
+	printf "$TEST_DIR: no such test directory\n" 1>&2
+	exit 1
+fi
+
+top_dir=$(readlink -m "$(git rev-parse --show-toplevel)")
+rel_dir=${TEST_DIR#$top_dir}
+exec_dir=$BASE$rel_dir
+
+# cleanup the exec directory for the tests
+${DRYRUN:+echo} rm -rf "$exec_dir"
+${DRYRUN:+echo} mkdir -p "$exec_dir"
+echo $exec_dir
+
+exit 0
+#EOF
