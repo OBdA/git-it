@@ -7,3 +7,9 @@ Weight: 20
 Status: open
 Assigned to: -
 
+Required labels in github to convert git-it types correctly.
+
++ bug
++ feature
++ issue
++ task
