@@ -2,9 +2,12 @@
 
 import os
 
+# default branch for the issue tracker
 ITDB_BRANCH    = 'git-it'
 TICKET_DIR     = 'tickets'
 HOLD_FILE      = '.hold'
-UNCATEGORIZED  = 'uncategorized'
+
+# release/category string used for not categorized issues
+UNCATEGORIZED  = 'None'
 
 EDIT_TMP_FILE  = '.it-edit.tmp'

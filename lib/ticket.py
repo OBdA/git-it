@@ -5,9 +5,9 @@ import datetime
 import colors
 import math
 import misc
-import repo
 import log
 import it
+from git import Repo
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -45,15 +45,29 @@ def ask_for_pattern(message, pattern = None, default=None):
 #
 # Helper functions for creating new tickets interactively or from file
 #
-def create_interactive():
+def create_interactive(git_cfg):
     # First, do some checks to error early
-    fullname = os.popen('git config user.name').read().strip()
-    email = os.popen('git config user.email').read().strip()
-    if not fullname:
-        log.printerr('author name not set. use "git config [--global] user.name \'John Smith\'" to set the fullname')
+    try:
+        fullname = git_cfg.get('user', 'name')
+    except Exception as e:
+        log.printerr("""
+Author name not set. Use
+
+    git config [--global] user.name "John Smith"
+
+to set the fullname.
+""")
         return
-    if not fullname:
-        log.printerr('author name not set. use "git config [--global] user.name \'John Smith\'" to set the fullname')
+    try:
+        email = git_cfg.get('user', 'email')
+    except Exception as e:
+        log.printerr("""
+Email address not set. Use
+
+        git config [--global] user.email "john@smith.org"
+
+to set the email address.
+""")
         return
 
     i = Ticket()
@@ -80,7 +94,7 @@ def create_interactive():
         default='3'
     ))
 
-    i.release = ask_for_pattern('Release: ', default='uncategorized')
+    i.release = ask_for_pattern('Release: ', default=it.UNCATEGORIZED)
 
     #FIXME: add ticket description as body
     #i.body = ask_for_multiline_pattern('Describe the ticket:\n')
@@ -102,17 +116,17 @@ def create_from_lines(array_with_lines, id = None, release = None, backward_comp
         # skip comment lines
         if line.startswith('#'):
             continue
-        
+
         # when we're in the body, just append lines
         if in_body or line.strip() == '':
             in_body = True
             ticket[None] += line + os.linesep
             continue
-        
+
         pos = line.find(':')
         if pos < 0:
             raise MalformedTicketFieldException, 'Cannot parse field "%s".' % line
-        
+
         key = line[:pos].strip()
         val = line[pos+1:].strip()
         ticket[key] = val
@@ -154,9 +168,8 @@ def create_from_string(content, id = None, release = None, backward_compatible =
     return create_from_lines(lines, id, release, backward_compatible)
 
 def create_from_file(filename, overwrite_id = None, overwrite_release = None):
-    if (overwrite_id and not overwrite_release) or (overwrite_release and not overwrite_id):
-        log.printerr('program error: specify both an alternative ID and alternative release or neither')
-        return
+    if bool(overwrite_id) ^ bool(overwrite_release):
+        raise Exception("specify alternative id AND alternative release OR neither")
 
     if overwrite_id:
         id = overwrite_id
@@ -202,10 +215,10 @@ class Ticket:
         self.status = 'open'
         self.assigned_to = '-'
         self.weight = 3  # the weight of 'minor' by default
-        self.release = 'uncategorized'
+        self.release = it.UNCATEGORIZED
+        self.working_dir = Repo().working_dir
 
-    def is_mine(self):
-        fullname = os.popen('git config user.name').read().strip()
+    def is_mine(self, fullname):
         return self.assigned_to == fullname
 
     def oneline(self, cols, annotate_ownership):
@@ -221,7 +234,8 @@ class Ticket:
             elif id == 'type':
                 colstrings.append(misc.pad_to_length(self.type, w))
             elif id == 'date':
-                colstrings.append(misc.pad_to_length('%s/%s' % (self.date.month, self.date.day), w))
+                colstrings.append(misc.pad_to_length('%d-%02d-%02d'
+                    % (self.date.year, self.date.month, self.date.day), w))
             elif id == 'title':
                 title = self.title
                 if self.assigned_to != '-' and annotate_ownership:
@@ -268,8 +282,10 @@ class Ticket:
             color_field = 'red-on-white'
         if not color_value:
             color_value = 'default'
-        print '%s%s:%s %s%s%s' % (colors.colors[color_field], field, colors.colors['default'], \
-                                                            colors.colors[color_value], value, colors.colors['default'])
+        print("%s%s:%s %s%s%s" %
+                (colors.colors[color_field], field, colors.colors['default'], \
+                colors.colors[color_value], value, colors.colors['default'])
+        )
 
     def print_ticket(self, fullsha = None):
         if fullsha:
@@ -283,14 +299,14 @@ class Ticket:
         self.print_ticket_field('Status', self.status, None, self.status_colors[self.status])
         self.print_ticket_field('Assigned to', self.assigned_to)
         self.print_ticket_field('Release', self.release)
-        print ''
-        print self.body
+        print('')
+        print(self.body)
 
     def filename(self):
-        file = os.path.join(repo.find_root(), it.TICKET_DIR, self.release, self.id)
+        file = os.path.join(self.working_dir, it.TICKET_DIR, self.release, self.id)
         return file
 
-    def save(self, file = None):
+    def save(self, filename = None):
         headers = [ 'Subject: %s'     % self.title,
                                 'Issuer: %s'      % self.issuer,
                                 'Date: %s'        % self.date.strftime(DATE_FORMAT),
@@ -305,14 +321,14 @@ class Ticket:
         contents = os.linesep.join(headers)
 
         # If an explicit file name is not given, calculate the default
-        if file is None:
-            file = self.filename()
+        if filename is None:
+            filename = self.filename()
 
         # Write the file
-        dir, _ = os.path.split(file)
+        dir, _ = os.path.split(filename)
         if dir and not os.path.isdir(dir):
             misc.mkdirs(dir)
-        f = open(file, 'w')
+        f = open(filename, 'w')
         try:
             f.write(contents)
         finally:
