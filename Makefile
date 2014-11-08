@@ -36,14 +36,9 @@ clean:
 	rm -f git-it.tar.gz
 
 tests:
-	@for dir in $(PWD)/tests/*; do \
-		echo === $$dir; \
-		prepare_test_dir=$$(readlink -e bin/prepare-test-dir); \
-		exec_it=$$(readlink -e bin/it); \
-		: set -x; \
-		( cd $$($$prepare_test_dir $$dir) \
-		  && shelltest -w $$exec_it "$$dir" -- --hide-successes ; \
-		) ; \
+	@for dir in $(PWD)/tests/*.test; do \
+		printf '\nRunning %s\n' $$dir; \
+		bin/run-test $$dir; \
 	done
 
 #EOF
