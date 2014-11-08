@@ -64,3 +64,24 @@ it leave
 Usage: it leave <id>
 >>>=1
 
+# subcommand list
+it list
+>>>
+No tickets yet. Use 'it new' to add new tickets.
+>>>=0
+
+# subcommand rm
+it rm
+>>>2
+
+Tickets can be closed with either of the following subcommands:
+  fix
+  reject
+  close
+
+To permanently remove a ticket instead of closing it, use:
+  it rm -f <id>
+
+>>>=1
+
+#EOF
