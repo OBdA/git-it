@@ -1,3 +1,9 @@
+# prepare repository
+  git init
+>>>=0
+it init
+>>>=0
+
 # subcommand edit
 it edit
 >>>2
