@@ -125,7 +125,7 @@ elif subcmd == 'fix':
     g.finish_ticket(params[0], 'fixed')
 elif subcmd == 'reject':
     if len(params) != 1:
-        log.printerr("Usage: it close <id>")
+        log.printerr("Usage: it reject <id>")
         sys.exit(1)
     g.finish_ticket(params[0], 'rejected')
 elif subcmd == 'test':
