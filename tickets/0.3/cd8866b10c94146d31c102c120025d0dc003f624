@@ -7,6 +7,8 @@ Weight: 3
 Status: open
 Assigned to: -
 
+Before arguments should be parsed with argparse module!
+
 For example
 	it list -b	should show open bugs only;
 	it list -f	should show all features, etc.;
