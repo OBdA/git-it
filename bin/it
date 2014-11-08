@@ -17,6 +17,10 @@ def usage():
     print("""
 Usage: it <subcommand> [<options>]
 
+Misc commands:
+  help      Displays this help.
+  version   Show version information.
+
 Valid subcommands are:
   init      Initializes an area for storing issues.
   list      Shows a list of all issues.

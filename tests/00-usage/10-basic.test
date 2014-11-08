@@ -1,0 +1,47 @@
+# check without any parameters
+it
+>>>2
+No subcommand specified.
+>>>= 1
+
+# check version command
+it version
+>>>/^git-it [[:digit:]]+\.[[:digit:]](-dev)?$/
+>>>= 0
+
+# check help command
+it help
+>>>
+
+Usage: it <subcommand> [<options>]
+
+Misc commands:
+  help      Displays this help.
+  version   Show version information.
+
+Valid subcommands are:
+  init      Initializes an area for storing issues.
+  list      Shows a list of all issues.
+  show      Shows details of a specific issue.
+  new       Adds a new issue.
+  edit      Edits an existing issue.
+  rm -f     Removes an existing ticket.
+  mv        Moves the given ticket to a release.
+  sync      Retrieves all remote ticket changes.
+
+Taking responsibility:
+  take      Take responsibility for this ticket and put it
+            in your INBOX (i.e. assign it to yourself).
+  leave     Let go responsibility for this ticket and remove
+            it from your INBOX.
+
+Changing status:
+  test      Mark a ticket as to-test.
+  close     Mark a ticket as closed.
+  fix       Mark a ticket as fixed.
+  reject    Mark a ticket as rejected.
+  reopen    Reopens an issue.
+
+>>>= 0
+
+#EOF
