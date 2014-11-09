@@ -14,4 +14,7 @@ Required labels in github to convert git-it types correctly.
 + issue
 + task
 
-https://api.github.com/repos/OBdA/test-git-it/issues
+uri='https://api.github.com/repos/OBdA/test-git-it/issues'
+
+from httplib2 import Http
+response, body = Http().request(uri, headers={})
