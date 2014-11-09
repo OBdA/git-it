@@ -13,3 +13,5 @@ Required labels in github to convert git-it types correctly.
 + feature
 + issue
 + task
+
+https://api.github.com/repos/OBdA/test-git-it/issues
