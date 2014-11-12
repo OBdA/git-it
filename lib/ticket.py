@@ -36,6 +36,31 @@ status_colors = {
 }
 
 
+##
+## New Class
+##
+
+# TICKET_FIELDS define for each data key a tuple with the requiment status
+# and the allowed type. _requirement status_ may be 'req' (required)
+# or 'opt' (optional). The _allowed type_ is a type, class or tuple.
+TICKET_FIELDS = {  'id': ('req',str), 'type': ('req',str), 'title': ('req',str),
+            'prio': ('req',int), 'weight': ('opt',int),
+            'created': ('req',datetime.datetime),
+            'last_modified': ('opt', datetime.datetime),
+            'issuer': ('req',str), 'assigned_to': ('opt',str),  # person
+            'status': ('req',str),                      # status
+            'release': ('opt',str),                     # milestone
+            'body': ('opt',str),                        # content (incl. comments?)
+        }
+
+TICKET_TYPES  = {
+        'error': 'error', 'bug': 'error',
+        'issue': 'issue',
+        'feature': 'feature',
+        'task': 'task'
+        }
+
+
 
 class MissingTicketFieldException(Exception): pass
 class MalformedTicketFieldException(Exception): pass
@@ -220,26 +245,6 @@ class NewTicket:
     Defines general ticket behaviours for all ticket flavours.
 
     """
-    TYPES  = {
-            'error': 'error', 'bug': 'error',
-            'issue': 'issue',
-            'feature': 'feature',
-            'task': 'task'
-            }
-
-    # FILEDS define for each data key a tuple with the requiment status
-    # and the allowed type. _requirement status_ may be 'req' (required)
-    # or 'opt' (optional). The _allowed type_ is a type, class or tuple.
-    FIELDS = {  'id': ('req',str), 'type': ('req',str), 'title': ('req',str),
-                'prio': ('req',int), 'weight': ('opt',int),
-                'created': ('req',datetime.datetime),
-                'last_modified': ('opt', datetime.datetime),
-                'issuer': ('req',str), 'assigned_to': ('opt',str),  # person
-                'status': ('req',str),                      # status
-                'release': ('opt',str),                     # milestone
-                'body': ('opt',str),                        # content (incl. comments?)
-            }
-
 
     def __init__(self, **kw):
         self.working_dir = Repo().working_dir
@@ -261,11 +266,15 @@ class NewTicket:
         }
         # overwrite defaults
         for key in kw:
-            #FIXME: check visibility of class variables
-#            if key in FIELDS:
+            if key in TICKET_FIELDS:
                 self.data[key] = kw[key]
-#            else:
-#                log.printerr("Ignore unknown ticket field '%s'" % key)
+            else:
+                log.printerr("Ignore unknown ticket field '%s'" % key)
+
+        # FIXME: check all fields (requirement and type)
+
+        # FIXME: check the 'type' field
+
         return
 
     def __str__(self):
