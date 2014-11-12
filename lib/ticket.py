@@ -11,6 +11,32 @@ from git import Repo
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
+# Definitions
+issue_types = ['error', 'issue', 'feature', 'task']
+prio_names = [ 'high', 'med', 'low' ]
+weight_names = [ 'small', 'minor', 'major', 'super' ]
+# weight n will be 3 times as large as weight n-1
+# so in order to get the real weight from the name:
+#   weight = 3 ** weight_names.index(name)
+# and to get the most appropriate name back from a number:
+#   approx_name = weight_names[min(3,max(0, int(round(math.log(weight, 3)))))]
+
+# Colors
+prio_colors = {
+    'high': 'red-on-white',
+    'med':  'yellow-on-white',
+    'low':  'white'
+}
+status_colors = {
+    'open':     'bold',
+    'test':     'bold',
+    'closed':   'default',
+    'rejected': 'red-on-white',
+    'fixed':    'green-on-white'
+}
+
+
+
 class MissingTicketFieldException(Exception): pass
 class MalformedTicketFieldException(Exception): pass
 
@@ -244,20 +270,20 @@ class Ticket:
                     title = '%s%s' % (misc.pad_to_length(misc.chop(title, w, '..'), w), name_suffix)
                 else:
                     title = misc.pad_to_length(misc.chop(title, w, '..'), w)
-                colstrings.append('%s%s%s' % (colors.colors[self.status_colors[self.status]],        \
+                colstrings.append('%s%s%s' % (colors.colors[status_colors[self.status]],        \
                                                                             title, \
                                                                             colors.colors['default']))
             elif id == 'status':
-                colstrings.append('%s%s%s' % (colors.colors[self.status_colors[self.status]],        \
+                colstrings.append('%s%s%s' % (colors.colors[status_colors[self.status]],        \
                                                                             misc.pad_to_length(self.status, 8),                             \
                                         colors.colors['default']))
             elif id == 'prio':
-                priostr = self.prio_names[self.prio-1]
-                colstrings.append('%s%s%s' % (colors.colors[self.prio_colors[priostr]],              \
+                priostr = prio_names[self.prio-1]
+                colstrings.append('%s%s%s' % (colors.colors[prio_colors[priostr]],              \
                                                                             misc.pad_to_length(priostr, 4),
                                         colors.colors['default']))
             elif id == 'wght':
-                weightstr = self.weight_names[min(3, max(0, int(round(math.log(self.weight, 3)))))]
+                weightstr = weight_names[min(3, max(0, int(round(math.log(self.weight, 3)))))]
                 colstrings.append(misc.pad_to_length(weightstr, 5))
 
         return ' '.join(colstrings)
@@ -296,7 +322,7 @@ class Ticket:
         self.print_ticket_field('Type', self.type)
         self.print_ticket_field('Priority', self.prio)
         self.print_ticket_field('Weight', self.weight)
-        self.print_ticket_field('Status', self.status, None, self.status_colors[self.status])
+        self.print_ticket_field('Status', self.status, None, status_colors[self.status])
         self.print_ticket_field('Assigned to', self.assigned_to)
         self.print_ticket_field('Release', self.release)
         print('')
