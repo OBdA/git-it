@@ -215,22 +215,69 @@ def create_from_file(filename, overwrite_id = None, overwrite_release = None):
         return create_from_string(content, id, release)
 
 
-class Ticket:
-    # Private fields
-    prio_names = [ 'high', 'med', 'low' ]
-    prio_colors = { 'high': 'red-on-white', 'med': 'yellow-on-white', 'low': 'white' }
-    status_colors = { 'open': 'bold', \
-                                        'test': 'bold', \
-                                        'closed': 'default', \
-                                        'rejected': 'red-on-white', \
-                                        'fixed': 'green-on-white' }
-    # weight n will be 3 times as large as weight n-1
-    # so in order to get the real weight from the name:
-    #   weight = 3 ** weight_names.index(name)
-    # and to get the most appropriate name back from a number:
-    #   approx_name = weight_names[min(3,max(0, int(round(math.log(weight, 3)))))]
-    weight_names = [ 'small', 'minor', 'major', 'super' ]
+class NewTicket:
+    """
+    Defines general ticket behaviours for all ticket flavours.
 
+    """
+    TYPES  = {
+            'error': 'error', 'bug': 'error',
+            'issue': 'issue',
+            'feature': 'feature',
+            'task': 'task'
+            }
+
+    # FILEDS define for each data key a tuple with the requiment status
+    # and the allowed type. _requirement status_ may be 'req' (required)
+    # or 'opt' (optional). The _allowed type_ is a type, class or tuple.
+    FIELDS = {  'id': ('req',str), 'type': ('req',str), 'title': ('req',str),
+                'prio': ('req',int), 'weight': ('opt',int),
+                'created': ('req',datetime.datetime),
+                'last_modified': ('opt', datetime.datetime),
+                'issuer': ('req',str), 'assigned_to': ('opt',str),  # person
+                'status': ('req',str),                      # status
+                'release': ('opt',str),                     # milestone
+                'body': ('opt',str),                        # content (incl. comments?)
+            }
+
+
+    def __init__(self, **kw):
+        self.working_dir = Repo().working_dir
+
+        now = datetime.datetime.now()
+        self.data = {
+                'id': '0000000',
+                'type': 'issue',
+                'subject': None,
+                'issuer': None,
+                'created': now,
+                'last_modified': now,
+                'priority': 3,
+                'status': 'open',
+                'assigned_to': None,
+                'weight': 3,
+                'release': it.UNCATEGORIZED,
+                'body': None,
+        }
+        # overwrite defaults
+        for key in kw:
+            #FIXME: check visibility of class variables
+#            if key in FIELDS:
+                self.data[key] = kw[key]
+#            else:
+#                log.printerr("Ignore unknown ticket field '%s'" % key)
+        return
+
+    def __str__(self):
+        return """Id: {id}\nSubject: {subject}\nIssuer: {issuer}
+Created: {created}\nLast modified: {last_modified}\nType: {type}
+Priority: {priority}\nWeight: {weight}
+Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
+
+{body}""".format(**self.data)
+
+
+class Ticket:
     def __init__(self):
         self.title = ''
         self.type = 'issue'
