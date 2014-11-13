@@ -20,8 +20,8 @@ DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 # TICKET_FIELDS define for each data key a tuple with the requiment status
 # and the allowed type. _requirement status_ may be 'req' (required)
 # or 'opt' (optional). The _allowed type_ is a type, class or tuple.
-TICKET_FIELDS = {  'id': ('req',str), 'type': ('req',str), 'title': ('req',str),
-            'prio': ('req',int), 'weight': ('opt',int),
+TICKET_FIELDS = {  'id': ('req',str), 'type': ('req',str), 'subject': ('req',str),
+            'priority': ('req',int), 'weight': ('opt',int),
             'created': ('req',datetime.datetime),
             'last_modified': ('opt', datetime.datetime),
             'issuer': ('req',str), 'assigned_to': ('opt',str),  # person
