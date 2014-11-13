@@ -247,12 +247,14 @@ class NewTicket:
 
     """
 
-    def __init__(self, **kw):
+    def __init__(self, data=None):
+        self.id = None
         self.working_dir = Repo().working_dir
 
+        # set default values for the new ticket
         now = datetime.datetime.now()
         self.data = {
-                'id': '0000000',
+                'id': None,
                 'type': 'issue',
                 'subject': None,
                 'issuer': None,
@@ -265,12 +267,20 @@ class NewTicket:
                 'release': it.UNCATEGORIZED,
                 'body': None,
         }
-        # overwrite defaults
-        for key in kw:
-            if key in TICKET_FIELDS:
-                self.data[key] = kw[key]
-            else:
-                log.printerr("Ignore unknown ticket field '%s'" % key)
+
+        if data is None:
+            self.read_interactivly()
+
+        elif isinstance(data, file):
+            self.read_file(data)
+
+        elif isinstance(data, dict):
+            # overwrite defaults
+            for key in data:
+                if key in TICKET_FIELDS:
+                    self.data[key] = data[key]
+                else:
+                    log.printerr("Ignore unknown ticket field '%s'" % key)
 
         # FIXME: check all fields (requirement and type)
 
