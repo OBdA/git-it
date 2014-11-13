@@ -10,6 +10,10 @@ import it
 from git import Repo
 
 
+import hashlib
+sha1_constructor = hashlib.sha1
+
+
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
@@ -272,6 +276,15 @@ class NewTicket:
 
         # FIXME: check the 'type' field
 
+        if self.data['id'] is None:
+            # create uniq SHA1 ID
+            s = sha1_constructor()
+            s.update(str(self))
+            #s.update(os.getlogin())
+            #s.update(datetime.datetime.now().__str__())
+            self.data['id'] = s.hexdigest()
+
+        self.id = self.data['id']
         return
 
     def __str__(self):
