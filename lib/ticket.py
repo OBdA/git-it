@@ -241,6 +241,22 @@ def create_from_file(filename, overwrite_id = None, overwrite_release = None):
         return create_from_string(content, id, release)
 
 
+def parse_datetime(string):
+    try:
+        dt = datetime.datetime.strptime(string,'%Y-%m-%dT%H:%M:%S.%f')
+    except ValueError:
+        try:
+            dt = datetime.datetime.strptime(string,'%Y-%m-%dT%H:%M:%S')
+        except ValueError:
+            try:
+                dt = datetime.datetime.strptime(string,'%Y-%m-%d %H:%M:%S.%f')
+            except ValueError:
+                try:
+                    dt = datetime.datetime.strptime(string,'%Y-%m-%d %H:%M:%S')
+                except ValueError as ex:
+                    raise RuntimeError('Can not determin date format', ex)
+    return dt
+
 class NewTicket:
     """
     Defines general ticket behaviours for all ticket flavours.
@@ -367,6 +383,52 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
             misc.mkdirs(dir)
         with open(filename, 'w') as fd:
             fd.write(str(self))
+
+        return
+
+
+    def read_file(self, fd):
+        self._from_lines(fd.readlines())
+
+    def _from_lines(self, lines):
+        # Parse the lines
+        ticket = {}
+        ticket['body'] = ''
+        in_body = False
+        for line in lines:
+            line = line.strip()
+            if not in_body and line == '':
+                in_body = True
+                continue
+
+            # when we're in the body, just append lines
+            elif in_body:
+                ticket['body'] += line + os.linesep
+                continue
+
+            if line.find(':') < 0:
+                raise MalformedTicketFieldException, 'Cannot parse field "%s".' % line
+            key,val = line.split(':', 1)
+            key = key.lower()
+            val = val.strip()
+
+            # backward compatibilities
+            if key == 'date': key = 'created'
+            elif key == 'assigned to': key = 'assigned_to'
+            ticket[key] = val
+
+        for field in TICKET_FIELDS:
+            if field in ticket:
+                # set the ticket field depending on type
+                if str == TICKET_FIELDS[field][1]:
+                    self.data[field] = ticket[field]
+                elif int == TICKET_FIELDS[field][1]:
+                    self.data[field] = int(ticket[field])
+                elif datetime.datetime == TICKET_FIELDS[field][1]:
+                    self.data[field] = parse_datetime(ticket[field])
+            else:
+                if 'req' == TICKET_FIELDS[field][0]:
+                    raise MissingTicketFieldException("Missing field '%s'" % field)
 
         return
 
