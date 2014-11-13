@@ -9,11 +9,33 @@ import log
 import it
 from git import Repo
 
+
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
-# Definitions
-issue_types = ['error', 'issue', 'feature', 'task']
-prio_names = [ 'high', 'med', 'low' ]
+
+# TICKET_FIELDS define for each data key a tuple with the requiment status
+# and the allowed type. _requirement status_ may be 'req' (required)
+# or 'opt' (optional). The _allowed type_ is a type, class or tuple.
+TICKET_FIELDS = {  'id': ('req',str), 'type': ('req',str), 'title': ('req',str),
+            'prio': ('req',int), 'weight': ('opt',int),
+            'created': ('req',datetime.datetime),
+            'last_modified': ('opt', datetime.datetime),
+            'issuer': ('req',str), 'assigned_to': ('opt',str),  # person
+            'status': ('req',str),                      # status
+            'release': ('opt',str),                     # milestone
+            'body': ('opt',str),                        # content (incl. comments?)
+        }
+
+# TICKET_TYPES defines allowed strings for the type of the ticket
+# (as keys) and get (as values) the string to use for this type.
+TICKET_TYPES  = {
+        'error': 'error', 'bug': 'error',
+        'issue': 'issue',
+        'feature': 'feature',
+        'task': 'task'
+        }
+
+priorities = [ 'high', 'med', 'low' ]
 weight_names = [ 'small', 'minor', 'major', 'super' ]
 # weight n will be 3 times as large as weight n-1
 # so in order to get the real weight from the name:
@@ -34,31 +56,6 @@ status_colors = {
     'rejected': 'red-on-white',
     'fixed':    'green-on-white'
 }
-
-
-##
-## New Class
-##
-
-# TICKET_FIELDS define for each data key a tuple with the requiment status
-# and the allowed type. _requirement status_ may be 'req' (required)
-# or 'opt' (optional). The _allowed type_ is a type, class or tuple.
-TICKET_FIELDS = {  'id': ('req',str), 'type': ('req',str), 'title': ('req',str),
-            'prio': ('req',int), 'weight': ('opt',int),
-            'created': ('req',datetime.datetime),
-            'last_modified': ('opt', datetime.datetime),
-            'issuer': ('req',str), 'assigned_to': ('opt',str),  # person
-            'status': ('req',str),                      # status
-            'release': ('opt',str),                     # milestone
-            'body': ('opt',str),                        # content (incl. comments?)
-        }
-
-TICKET_TYPES  = {
-        'error': 'error', 'bug': 'error',
-        'issue': 'issue',
-        'feature': 'feature',
-        'task': 'task'
-        }
 
 
 
@@ -335,7 +332,7 @@ class Ticket:
                                                                             misc.pad_to_length(self.status, 8),                             \
                                         colors.colors['default']))
             elif id == 'prio':
-                priostr = prio_names[self.prio-1]
+                priostr = priorities[self.prio-1]
                 colstrings.append('%s%s%s' % (colors.colors[prio_colors[priostr]],              \
                                                                             misc.pad_to_length(priostr, 4),
                                         colors.colors['default']))
