@@ -283,6 +283,50 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
 {body}""".format(**self.data)
 
 
+    def read_interactivly(self):
+        import readline
+
+        # get title
+        self.data['subject'] = ask_for_pattern('Title: ', not_empty)
+
+        # get type of issue
+        #FIXME: set the readline completion to allowed the ticket types
+        #type_dict = { 'i': 'issue', 't': 'task', 'f': 'feature', 'b': 'bug' }
+        self.data['type'] = ask_for_pattern(
+                    'Type [issue (default), error, feature, task]: ',
+                    lambda x: not_empty(x) and x.strip() in TICKET_TYPES.values(),
+                    default = 'issue'
+        )
+
+        # form a stringwith all priorities like '(num)prio' -- comma separated
+        text = 'Priority [%s]' % ', '.join(
+                ['(%d)%s' % (i+1, priorities[i])
+                    for i in range(0,len(priorities))])
+        prio_string = ask_for_pattern(
+                text,
+                lambda x: x.strip() in ''.join(map(str, range(1, len(priorities)+1))),
+                default='2'
+        )
+        self.data['priority'] = int(prio_string)
+
+        # get weight
+        self.data['weight'] = int(ask_for_pattern(
+                'Weight [1-27] (1=small, 3=minor, 9=major, 27=super): ',
+                lambda x: is_int(x) and 1 <= int(x) <= 27,
+                default='3'
+        ))
+
+        # get release (or milestone)
+        #Feature: get all available releases and configure a readline completer
+        self.data['release'] = ask_for_pattern('Release: ', default=it.UNCATEGORIZED)
+
+        #FIXME: add ticket description as body
+        #self.data['body'] = ask_for_multiline_pattern('Describe the ticket:\n')
+
+        self.data['last_modified'] = datetime.datetime(now)
+        return
+
+
 class Ticket:
     def __init__(self):
         self.title = ''
