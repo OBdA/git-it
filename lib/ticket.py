@@ -327,6 +327,27 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
         return
 
 
+    def save(self, filename = None):
+
+        # If an explicit file name is not given, calculate the default
+        if filename is None:
+            filename = os.path.join(
+                    self.working_dir,
+                    it.TICKET_DIR,
+                    self.date['release'],
+                    self.data['id']
+            )
+
+        # Write the file
+        dir, _ = os.path.split(filename)
+        if dir and not os.path.isdir(dir):
+            misc.mkdirs(dir)
+        with open(filename, 'w') as fd:
+            fd.write(str(self))
+
+        return
+
+
 class Ticket:
     def __init__(self):
         self.title = ''
