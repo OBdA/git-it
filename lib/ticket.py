@@ -252,7 +252,7 @@ class NewTicket:
         self.working_dir = Repo().working_dir
 
         # set default values for the new ticket
-        now = datetime.datetime.now()
+        now = datetime.datetime.isoformat(datetime.datetime.now())
         self.data = {
                 'id': None,
                 'type': 'issue',
