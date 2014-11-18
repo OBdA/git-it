@@ -20,7 +20,7 @@ DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 # TICKET_FIELDS define for each data key a tuple with the requiment status
 # and the allowed type. _requirement status_ may be 'req' (required)
 # or 'opt' (optional). The _allowed type_ is a type, class or tuple.
-TICKET_FIELDS = {  'id': ('req',str), 'type': ('req',str), 'subject': ('req',str),
+TICKET_FIELDS = {  'id': ('opt',str), 'type': ('req',str), 'subject': ('req',str),
             'priority': ('req',int), 'weight': ('opt',int),
             'created': ('req',datetime.datetime),
             'last_modified': ('opt', datetime.datetime),
@@ -326,10 +326,11 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
         """ Get value of _field_. Return _default_ (default: None) if
             field is not set.
         """
-        assert(field in TICKET_FIELDS.keys(), "Unknown ticket field '%s'" % field)
+        assert field in TICKET_FIELDS.keys(), "Unknown ticket field '%s'" % field
 
-        if self.data[field] not None:
+        if self.data[field] is not None:
             return self.data[field]
+
         return default
 
 
@@ -337,9 +338,9 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
         """ Set tickets _field_ to _value_ and return the old value.
             Return None if nothing has changed.
         """
-        assert(field in TICKET_FIELDS.keys(), "Unknown ticket field '%s'" % field)
+        assert field in TICKET_FIELDS.keys(), "Unknown ticket field '%s'" % field
 
-        if self.data[field) != value:
+        if self.data[field] != value:
             oldval = self.get_field(field)
             self.data[field] = value
             return oldval
@@ -347,7 +348,7 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
             return None
 
     def set_default(self, field, value):
-        assert(field in TICKET_FIELDS.keys(), "Unknown ticket field '%s'" % field)
+        assert field in TICKET_FIELDS.keys(), "Unknown ticket field '%s'" % field
 
         if self.data[field] is None:
             self.data[field] = value

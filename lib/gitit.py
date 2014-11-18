@@ -242,13 +242,19 @@ class Gitit:
             return
 
         try:
-            i = ticket.create_from_file(filename, fullsha, rel)
+            with open(filename) as fd:
+                i = ticket.NewTicket(fd)
+
         except ticket.MalformedTicketFieldException as e:
             log.printerr("Error parsing ticket: %s" % e)
             sys.exit(1)
         except ticket.MissingTicketFieldException as e:
             log.printerr("Error parsing ticket: %s" % e)
             sys.exit(1)
+
+        # compatibility with git-it <= 0.2
+        i.set_default('id', fullsha)
+        i.set_default('release', rel)
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
