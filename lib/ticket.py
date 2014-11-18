@@ -322,6 +322,37 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
 {body}""".format(**self.data)
 
 
+    def get_field(self, field, default=None):
+        """ Get value of _field_. Return _default_ (default: None) if
+            field is not set.
+        """
+        assert(field in TICKET_FIELDS.keys(), "Unknown ticket field '%s'" % field)
+
+        if self.data[field] not None:
+            return self.data[field]
+        return default
+
+
+    def set_field(self, field, value):
+        """ Set tickets _field_ to _value_ and return the old value.
+            Return None if nothing has changed.
+        """
+        assert(field in TICKET_FIELDS.keys(), "Unknown ticket field '%s'" % field)
+
+        if self.data[field) != value:
+            oldval = self.get_field(field)
+            self.data[field] = value
+            return oldval
+        else:
+            return None
+
+    def set_default(self, field, value):
+        assert(field in TICKET_FIELDS.keys(), "Unknown ticket field '%s'" % field)
+
+        if self.data[field] is None:
+            self.data[field] = value
+
+
     def read_interactivly(self):
         import readline
 
