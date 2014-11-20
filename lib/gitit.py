@@ -266,8 +266,8 @@ class Gitit:
             i.save()
             self.repo.git.commit(['-m', msg, i.filename()])
             print("Ticket '%s' edited succesfully" % sha7)
-        except Exception:
-            log.printerr("Error commiting modified ticket.")
+        except Exception as ex:
+            raise RuntimeError("Error commiting modified ticket: %s", ex)
 
         finally:
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
