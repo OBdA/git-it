@@ -263,8 +263,9 @@ class NewTicket:
 
     """
 
-    def __init__(self, data=None):
-        self.id = None
+    def __init__(self, data=None, ticket_id=None, release=None):
+        self.id = None          # is None or str(hexdigest())
+        self.release = None     # is None or str(release)
         self.working_dir = Repo().working_dir
 
         # set default values for the new ticket
@@ -306,14 +307,25 @@ class NewTicket:
         # FIXME: check the 'type' field
 
         if self.data['id'] is None:
-            # create uniq SHA1 ID
-            s = sha1_constructor()
-            s.update(str(self))
-            #s.update(os.getlogin())
-            #s.update(datetime.datetime.now().__str__())
-            self.data['id'] = s.hexdigest()
+            if ticket_id is None:
+                # create uniq SHA1 ID
+                s = sha1_constructor()
+                s.update(str(self))
+                #s.update(os.getlogin())
+                #s.update(datetime.datetime.now().__str__())
+                self.data['id'] = s.hexdigest()
+            else:
+                # compatibility git-it <= 0.2
+                self.data['id'] = ticket_id
 
+        # compatibility git-it <= 0.2
+        if self.data['release'] is it.UNCATEGORIZED and release is not None:
+            self.data['release'] = release
+
+        #FIXME: use self.{id,release} instead of self.data[...]
         self.id = self.data['id']
+        self.release = self.data['release'] if self.data['release'] != it.UNCATEGORIZED \
+                else None
         return
 
     def __str__(self):
