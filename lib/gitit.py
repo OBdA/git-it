@@ -517,7 +517,7 @@ class Gitit:
             ]
 
             # Store the tickets in the inbox if neccessary
-            inbox += filter(lambda t: t.is_mine(fullname), tickets)
+            inbox += filter(lambda t: t.is_assigned_to(fullname), tickets)
 
             print_count += self.__print_ticket_rows(rel, tickets, show_types, True, True)
 

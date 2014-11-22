@@ -482,6 +482,9 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
                     self.working_dir, it.TICKET_DIR,
                     self.data['release'], self.data['id'])
 
+    def is_assigned_to(self, fullname):
+        return self.data['assigned_to'] == fullname
+
 
 class Ticket:
     def __init__(self):
