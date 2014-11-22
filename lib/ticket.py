@@ -98,6 +98,7 @@ def ask_for_pattern(message, pattern = None, default=None):
 # Helper functions for creating new tickets interactively or from file
 #
 def create_interactive(git_cfg):
+    # FIXME: FIXME before deletion!
     # FIXME: move check for author's name and email to git-it initialisation
     # First, do some checks to error early
     try:
