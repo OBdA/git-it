@@ -365,39 +365,32 @@ class Gitit:
 
         # Create a fresh ticket
         try:
-            i = ticket.create_interactive(self._gitcfg)
+            i = ticket.NewTicket()
         except KeyboardInterrupt:
             print('')
             print("Aborting new ticket.")
             return None
 
-        # Generate a SHA1 id
-        s = sha1_constructor()
-        s.update(i.__str__())
-        s.update(os.getlogin())
-        s.update(datetime.datetime.now().__str__())
-        i.id = ticketname = s.hexdigest()
-
         # Save the ticket to disk
         i.save()
-        sha7 = misc.chop(ticketname, 7)
+        sha7 = misc.chop(self.data['id'], 7)
         print("New ticket '%s' saved" % sha7)
 
-        # Commit the new ticket to the 'aaa' branch
+        # Commit the new ticket to the 'git-it' branch
         curr_branch = self.repo.active_branch.name
-        msg = "%s added ticket '%s'" % (i.issuer, sha7)
+        msg = "%s added ticket '%s'" % (i.data['issuer'], sha7)
         msg = msg.capitalize()
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
 
         try:
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-            self.repo.git.add([i.filename()])
-            self.repo.git.commit(['-m', msg, i.filename()])
+            self.repo.git.add([i.filename])
+            self.repo.git.commit(['-m', msg, i.filename])
         except:
             log.printerr("Error commiting changes to ticket '%s'" % sha7)
         finally:
-            os.remove(i.filename())
-            self.repo.git.rm(['--cached', i.filename()])
+            os.remove(i.filename)
+            self.repo.git.rm(['--cached', i.filename])
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
             self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
             misc.rmdirs(abs_ticket_dir)
