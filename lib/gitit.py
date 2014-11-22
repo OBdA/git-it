@@ -19,25 +19,11 @@ except ImportError:
     sha1_constructor = sha.new
 
 
-def cmp_by_prio(t1, t2):
-    return cmp(t1.prio, t2.prio)
-
-
-def cmp_by_date(t1, t2):
-    if t1.date < t2.date:
-        return -1
-    elif t1.date > t2.date:
-        return 1
-    else:
-        return 0
-
-
 def cmp_by_prio_then_date(ticket1, ticket2):
-    v = cmp_by_prio(ticket1, ticket2)
+    v = ticket1.cmp_by(ticket2, 'priority')
     if v == 0:
-        return cmp_by_date(ticket1, ticket2)
-    else:
-        return v
+        v =  ticket1.cmp_by(ticket2, 'created')
+    return v
 
 
 def versionCmp(strx, stry):

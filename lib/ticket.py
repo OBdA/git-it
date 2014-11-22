@@ -486,6 +486,11 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
         return self.data['assigned_to'] == fullname
 
 
+    def cmp_by(self, other, what='created'):
+        assert what in TICKET_FIELDS, "Ticket has no field '%s'" % what
+        return cmp(self.data[what], other.data[what])
+
+
 class Ticket:
     def __init__(self):
         self.title = ''
