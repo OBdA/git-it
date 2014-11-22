@@ -290,6 +290,9 @@ class NewTicket:
         elif isinstance(data, file):
             self.read_file(data)
 
+        elif isinstance(data, (list, tuple)):
+            self._from_lines(data)
+
         elif isinstance(data, dict):
             # overwrite defaults
             for key in data:
