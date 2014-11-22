@@ -507,13 +507,14 @@ class Gitit:
                 rel_tree = rel_tree[dir]
             ticketfiles = [(x.mode, x.type, x.hexsha, x.name) for x in rel_tree.blobs]
 
-            tickets = [ ticket.create_from_lines(\
-                        self.repo.git.cat_file(['-p', sha]).split("\n"), \
-                        ticket_id, rel, True) \
-                    for _, type, sha, ticket_id in ticketfiles \
-                    if type == 'blob' and ticket_id != it.HOLD_FILE \
+            #FIXME: do not use 'ticket_id' and 'release' in ticket constructor
+            #       Backward compatibility only!
+            tickets = [ ticket.NewTicket(
+                    self.repo.git.cat_file(['-p', sha]).split("\n"),
+                    ticket_id=ticket_id, release=rel
+                ) for _, type, sha, ticket_id in ticketfiles \
+                if type == 'blob' and ticket_id != it.HOLD_FILE \
             ]
-
 
             # Store the tickets in the inbox if neccessary
             inbox += filter(lambda t: t.is_mine(fullname), tickets)
@@ -567,8 +568,9 @@ class Gitit:
         rel = os.path.basename(parent)
 
         contents = self.repo.git.cat_file(['-p', it.ITDB_BRANCH + ':' + match])
-        i = ticket.create_from_lines(contents.split("\n"), fullsha, rel, True)
-        return (i, rel, fullsha, match)
+        i = ticket.NewTicket(contents.split("\n"), ticket_id=fullsha, release=rel)
+        #FIXME: do only return the ticket, not a tuple of ticket particles
+        return (i, i.data['release'], i.data['id'], match)
 
 
     def finish_ticket(self, sha, new_status):
