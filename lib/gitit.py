@@ -402,8 +402,8 @@ class Gitit:
             _, width = os.popen('stty size').read().strip().split()
             width = int(width)
 
-        total = sum([t.weight for t in tickets if t.status != 'rejected']) * 1.0
-        done = sum([t.weight for t in tickets if t.status not in ['open', 'rejected', 'test']]) * 1.0
+        total = sum([t.data['weight'] for t in tickets if t.data['status'] != 'rejected']) * 1.0
+        done = sum([t.data['weight'] for t in tickets if t.data['status'] not in ['open', 'rejected', 'test']]) * 1.0
         release_line = colors.colors['red-on-white'] + '%-16s' % rel + \
                                                                                                          colors.colors['default']
 
@@ -414,7 +414,7 @@ class Gitit:
             header = release_line
 
         # First, filter all types that do not need to be shown out of the list
-        tickets_to_print = filter(lambda t: t.status in show_types, tickets)
+        tickets_to_print = filter(lambda t: t.data['status'] in show_types, tickets)
         if len(tickets_to_print) > 0:
             print(header)
 
