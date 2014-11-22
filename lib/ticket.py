@@ -448,12 +448,7 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
 
         # If an explicit file name is not given, calculate the default
         if filename is None:
-            filename = os.path.join(
-                    self.working_dir,
-                    it.TICKET_DIR,
-                    self.date['release'],
-                    self.data['id']
-            )
+            filename = self.filename
 
         # Write the file
         dir, _ = os.path.split(filename)
@@ -463,6 +458,13 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
             fd.write(str(self))
 
         return
+
+
+    @property
+    def filename(self):
+            return os.path.join(
+                    self.working_dir, it.TICKET_DIR,
+                    self.data['release'], self.data['id'])
 
 
 class Ticket:
