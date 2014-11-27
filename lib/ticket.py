@@ -491,6 +491,57 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
         return cmp(self.data[what], other.data[what])
 
 
+    def oneline(self, cols, annotate_ownership):
+        colstrings = []
+        for col in cols:
+            if not col['visible']:
+                continue
+
+            w = col['width']
+            id = col['id']
+            if id == 'id':
+                colstrings.append(misc.chop(self.id, w))
+            elif id == 'type':
+                colstrings.append(misc.pad_to_length(self.data['type'], w))
+            elif id == 'date':
+                colstrings.append(misc.pad_to_length('%d-%02d-%02d'
+                    % ( self.data['created'].year,
+                        self.data['created'].month,
+                        self.data['created'].day), w))
+            elif id == 'title':
+                title = self.data['subject']
+                if self.data['assigned_to'] != '-' and annotate_ownership:
+                    name_suffix = ' (%s)' % self.data['assigned_to'].split()[0]
+                    w = w - len(name_suffix)
+                    title = '%s%s' % (misc.pad_to_length(
+                        misc.chop(title, w, '..'), w),
+                        name_suffix)
+                else:
+                    title = misc.pad_to_length(misc.chop(title, w, '..'), w)
+                colstrings.append('%s%s%s' % (
+                        colors.colors[status_colors[self.data['status']]],
+                        title,
+                        colors.colors['default']))
+            elif id == 'status':
+                colstrings.append('%s%s%s' % (
+                        colors.colors[status_colors[self.data['status']]],
+                        misc.pad_to_length(self.data['status'], 8),
+                        colors.colors['default']))
+            elif id == 'prio':
+                priostr = priorities[self.data['priority'] -1]
+                colstrings.append('%s%s%s' % (
+                        colors.colors[prio_colors[priostr]],
+                        misc.pad_to_length(priostr, 4),
+                        colors.colors['default']))
+            elif id == 'wght':
+                weightstr = weight_names[min(3,
+                    max(0, int(round(math.log(self.data['weight'], 3)))))]
+                colstrings.append(misc.pad_to_length(weightstr, 5))
+
+        return ' '.join(colstrings)
+
+
+
 class Ticket:
     def __init__(self):
         self.title = ''
