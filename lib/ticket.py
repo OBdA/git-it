@@ -20,14 +20,15 @@ DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 # TICKET_FIELDS define for each data key a tuple with the requiment status
 # and the allowed type. _requirement status_ may be 'req' (required)
 # or 'opt' (optional). The _allowed type_ is a type, class or tuple.
-TICKET_FIELDS = {  'id': ('opt',str), 'type': ('req',str), 'subject': ('req',str),
-            'priority': ('req',int), 'weight': ('opt',int),
-            'created': ('req',datetime.datetime),
-            'last_modified': ('opt', datetime.datetime),
-            'issuer': ('req',str), 'assigned_to': ('opt',str),  # person
-            'status': ('req',str),                      # status
-            'release': ('opt',str),                     # milestone
-            'body': ('opt',str),                        # content (incl. comments?)
+# Third field is the printing order as int.
+TICKET_FIELDS = {  'id': ('opt',str,1), 'type': ('req',str,4), 'subject': ('req',str,2),
+            'priority': ('req',int,5), 'weight': ('opt',int,6),
+            'created': ('req',datetime.datetime,7),
+            'last_modified': ('opt', datetime.datetime,8),
+            'issuer': ('req',str,3), 'assigned_to': ('opt',str,9),  # person
+            'status': ('req',str,10),                      # status
+            'release': ('opt',str,11),                     # milestone
+            'body': ('opt',str,12),                        # content (incl. comments?)
         }
 
 # TICKET_TYPES defines allowed strings for the type of the ticket
@@ -540,6 +541,24 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
 
         return ' '.join(colstrings)
 
+    def print_ticket(self):
+        print(self)
+
+        # sort the ticket fields after the third field
+        fields = [(k,v) for k,v in TICKET_FIELDS.items() if k != 'body']
+        fields.sort(key=lambda x: x[1][2])
+
+        color_field = 'red-on-white'
+        color_value = 'default'
+
+        for field in fields:
+            key = field[0]
+            value = self.data[key]
+            print("%s%s:%s %s%s%s" %
+                (colors.colors[color_field], key, colors.colors['default'], \
+                colors.colors[color_value], value, colors.colors['default'])
+            )
+        print("\n%s" % self.data['body'])
 
 
 class Ticket:

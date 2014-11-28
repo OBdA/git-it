@@ -308,8 +308,8 @@ class Gitit:
 
 
     def show(self, sha):
-        i, _, fullsha, _ = self.get_ticket(sha)
-        i.print_ticket(fullsha)
+        i, _, _, _ = self.get_ticket(sha)
+        i.print_ticket()
 
 
     def sync(self):
