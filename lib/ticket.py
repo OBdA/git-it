@@ -17,19 +17,37 @@ sha1_constructor = hashlib.sha1
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
+# WORKING: rewrite TICKET_FIELDS
+# use hash with keys for each eigenschaft of a ticket field
+# add a field 'visual' for printing the field names
+
 # TICKET_FIELDS define for each data key a tuple with the requiment status
 # and the allowed type. _requirement status_ may be 'req' (required)
 # or 'opt' (optional). The _allowed type_ is a type, class or tuple.
 # Third field is the printing order as int.
-TICKET_FIELDS = {  'id': ('opt',str,1), 'type': ('req',str,4), 'subject': ('req',str,2),
-            'priority': ('req',int,5), 'weight': ('opt',int,6),
-            'created': ('req',datetime.datetime,7),
-            'last_modified': ('opt', datetime.datetime,8),
-            'issuer': ('req',str,3), 'assigned_to': ('opt',str,9),  # person
-            'status': ('req',str,10),                      # status
-            'release': ('opt',str,11),                     # milestone
-            'body': ('opt',str,12),                        # content (incl. comments?)
-        }
+#TICKET_FIELDS = {  'id': ('opt',str,1), 'type': ('req',str,4), 'subject': ('req',str,2),
+#            'priority': ('req',int,5), 'weight': ('opt',int,6),
+#            'created': ('req',datetime.datetime,7),
+#            'last_modified': ('opt', datetime.datetime,8),
+#            'issuer': ('req',str,3), 'assigned_to': ('opt',str,9),  # person
+#            'status': ('req',str,10),                      # status
+#            'release': ('opt',str,11),                     # milestone
+#            'body': ('opt',str,12),                        # content (incl. comments?)
+#        }
+TICKET_FIELDS = {
+        'id':      {'name': 'id',      'required': False, 'type': str, 'order': 1},
+        'subject': {'name': 'subject', 'required': True,  'type': str, 'order': 2},
+        'issuer':  {'name': 'issuer',  'required': True,  'type': str, 'order': 3},
+        'type':    {'name': 'type',    'required': True,  'type': str, 'order': 4},
+        'priority':{'name': 'priority','required': True,  'type': int, 'order': 5},
+        'weight':  {'name': 'weight',  'required': False, 'type': int, 'order': 6},
+        'created': {'name': 'created', 'required': True,  'type': datetime.datetime, 'order': 7},
+        'last_modified': {'name': 'last_modified', 'required': False, 'type': datetime.datetime, 'order': 8},
+        'assigned_to':{'name': 'assigned_to', 'required': False, 'type': str, 'order': 9},
+        'status':  {'name': 'status', 'required': True, 'type': str, 'order': 10},
+        'release': {'name': 'release', 'required': False, 'type': str, 'order': 11},
+        'body':    {'name': 'body',   'required': False, 'type': str, 'order': 12}
+}
 
 # TICKET_TYPES defines allowed strings for the type of the ticket
 # (as keys) and get (as values) the string to use for this type.
@@ -448,14 +466,14 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
         for field in TICKET_FIELDS:
             if field in ticket:
                 # set the ticket field depending on type
-                if str == TICKET_FIELDS[field][1]:
+                if str == TICKET_FIELDS[field]['type']:
                     self.data[field] = ticket[field]
-                elif int == TICKET_FIELDS[field][1]:
+                elif int == TICKET_FIELDS[field]['type']:
                     self.data[field] = int(ticket[field])
-                elif datetime.datetime == TICKET_FIELDS[field][1]:
+                elif datetime.datetime == TICKET_FIELDS[field]['type']:
                     self.data[field] = parse_datetime(ticket[field])
             else:
-                if 'req' == TICKET_FIELDS[field][0]:
+                if TICKET_FIELDS[field]['required']:
                     raise MissingTicketFieldException("Missing field '%s'" % field)
 
         return
@@ -542,18 +560,19 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
         return ' '.join(colstrings)
 
     def print_ticket(self):
-        print(self)
+        #print(self)
 
         # sort the ticket fields after the third field
         fields = [(k,v) for k,v in TICKET_FIELDS.items() if k != 'body']
-        fields.sort(key=lambda x: x[1][2])
+        fields.sort(key=lambda x: x[1]['order'])
 
         color_field = 'red-on-white'
         color_value = 'default'
 
         for field in fields:
-            key = field[0]
-            value = self.data[key]
+            k,v = field
+            key = v['visual'] if 'visual' in field else v['name'].capitalize()
+            value = self.data[k]
             print("%s%s:%s %s%s%s" %
                 (colors.colors[color_field], key, colors.colors['default'], \
                 colors.colors[color_value], value, colors.colors['default'])
