@@ -19,6 +19,7 @@ b
 >>>=0
 
 # check ticket title (fixed by bc8861b)
+# MAY_FAIL: colored output can not be testet
 it show $(cat ,ticket-sha7)
 >>>/^Subject: title$/
 >>>=0
