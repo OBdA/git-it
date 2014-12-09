@@ -1,0 +1,34 @@
+#! /bin/sh
+set -e
+set -u
+
+# Depends on
+# + package shelltestrunner
+# + installed git
+# + git repository
+
+# Usage:
+#   run-test <test>
+
+if [ $# -lt 1 ]; then
+	printf 'Usage: run-test <test>\n' 1>&2
+	exit 1
+fi
+TEST=$(readlink -e "$1"); shift
+
+SCRIPTPATH=$(readlink -e $0)
+EXECPATH=${SCRIPTPATH%/*}
+IT=$EXECPATH/it
+
+if ! TESTBASE=$(mktemp -d --tmpdir=/tmp git-it.XXXXXXXXXX); then
+	printf 'Error creating test directory.\n'
+	exit 1
+fi
+${QUIET:+:} printf 'Using "%s" as test directory.\n' $TESTBASE
+trap "${DEBUG:+:} rm -rf $TESTBASE" 0
+
+# run the test
+( cd $TESTBASE && shelltest -w "$IT" "$TEST" ${QUIET:+-- --hide-successes} )
+
+exit 0
+#EOF

@@ -1,0 +1,87 @@
+# prepare repository
+  git init
+>>>=0
+it init
+>>>=0
+
+# subcommand edit
+it edit
+>>>2
+Usage: it edit <id>
+>>>=1
+
+# subcommand show
+it show
+>>>2
+Usage: it show <id>
+>>>=1
+
+# subcommand mv
+it mv
+>>>2
+Usage: it mv <id> <release>
+>>>=1
+
+# subcommand close
+it close
+>>>2
+Usage: it close <id>
+>>>=1
+
+# subcommand fix
+it fix
+>>>2
+Usage: it fix <id>
+>>>=1
+
+# subcommand reject
+it reject
+>>>2
+Usage: it reject <id>
+>>>=1
+
+# subcommand test
+it test
+>>>2
+Usage: it test <id>
+>>>=1
+
+# subcommand reopen
+it reopen
+>>>2
+Usage: it reopen <id>
+>>>=1
+
+# subcommand take
+it take
+>>>2
+Usage: it take <id>
+>>>=1
+
+# subcommand leave
+it leave
+>>>2
+Usage: it leave <id>
+>>>=1
+
+# subcommand list
+it list
+>>>
+No tickets yet. Use 'it new' to add new tickets.
+>>>=0
+
+# subcommand rm
+it rm
+>>>2
+
+Tickets can be closed with either of the following subcommands:
+  fix
+  reject
+  close
+
+To permanently remove a ticket instead of closing it, use:
+  it rm -f <id>
+
+>>>=1
+
+#EOF

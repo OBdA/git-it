@@ -1,0 +1,27 @@
+# prepare it (2 tests)
+  git init
+>>>=0
+it init
+>>>=0
+
+# add a ticket
+it new > ,new
+<<<
+title
+b
+1
+3
+
+>>>=0
+
+# get new ticket id
+  cat ,new |sed -r "s/.*'(.*)'.*/\1/" > ,ticket-sha7
+>>>=0
+
+# check ticket title (fixed by bc8861b)
+# MAY_FAIL: colored output can not be testet
+it show $(cat ,ticket-sha7)
+>>>/^Subject: title$/
+>>>=0
+
+#EOF
