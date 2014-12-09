@@ -17,11 +17,6 @@ sha1_constructor = hashlib.sha1
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 
-# WORKING: rewrite TICKET_FIELDS
-# use hash with keys for each eigenschaft of a ticket field
-# add a field 'visual' for printing the field names
-
-# TICKET_FIELDS define for each data key a tuple with the requiment status
 # and the allowed type. _requirement status_ may be 'req' (required)
 # or 'opt' (optional). The _allowed type_ is a type, class or tuple.
 # Third field is the printing order as int.
@@ -34,18 +29,28 @@ DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 #            'release': ('opt',str,11),                     # milestone
 #            'body': ('opt',str,12),                        # content (incl. comments?)
 #        }
+
+# TICKET_FIELDS
+# each ticket field is represented with hash entry which value is another
+# hash, containing one or more of the following fields:
+# + name (str)
+# + alias (str)
+# + required (bool)
+# + type (class)
+# + order (int)
+#
 TICKET_FIELDS = {
         'id':      {'name': 'id',      'required': False, 'type': str, 'order': 1},
-        'subject': {'name': 'subject', 'required': True,  'type': str, 'order': 2},
-        'issuer':  {'name': 'issuer',  'required': True,  'type': str, 'order': 3},
+        'issuer':  {'name': 'issuer',  'required': True,  'type': str, 'order': 2},
+        'created': {'name': 'created', 'required': True,  'type': datetime.datetime, 'order': 3},
         'type':    {'name': 'type',    'required': True,  'type': str, 'order': 4},
-        'priority':{'name': 'priority','required': True,  'type': int, 'order': 5},
-        'weight':  {'name': 'weight',  'required': False, 'type': int, 'order': 6},
-        'created': {'name': 'created', 'required': True,  'type': datetime.datetime, 'order': 7},
-        'last_modified': {'name': 'last_modified', 'required': False, 'type': datetime.datetime, 'order': 8},
+        'subject': {'name': 'subject', 'required': True,  'type': str, 'order': 5},
+        'priority':{'name': 'priority','required': True,  'type': int, 'order': 6},
+        'weight':  {'name': 'weight',  'required': False, 'type': int, 'order': 7},
+        'status':  {'name': 'status', 'required': True, 'type': str, 'order': 8},
         'assigned_to':{'name': 'assigned_to', 'required': False, 'type': str, 'order': 9},
-        'status':  {'name': 'status', 'required': True, 'type': str, 'order': 10},
-        'release': {'name': 'release', 'required': False, 'type': str, 'order': 11},
+        'release': {'name': 'release', 'required': False, 'type': str, 'order': 10},
+        'last_modified': {'name': 'last_modified', 'required': False, 'type': datetime.datetime, 'order': 11},
         'body':    {'name': 'body',   'required': False, 'type': str, 'order': 12}
 }
 
