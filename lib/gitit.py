@@ -359,7 +359,7 @@ class Gitit:
 
         # Save the ticket to disk
         i.save()
-        sha7 = misc.chop(self.data['id'], 7)
+        sha7 = misc.chop(i.data['id'], 7)
         print("New ticket '%s' saved" % sha7)
 
         # Commit the new ticket to the 'git-it' branch
