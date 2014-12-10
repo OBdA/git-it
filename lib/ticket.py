@@ -583,6 +583,6 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
                 colors.colors[color_value], value, colors.colors['default'])
             )
         body = '' if self.data['body'] is None else self.data['body']
-        print("\n%s" % body, newline='')
+        print("\n%s" % body)
 
 #EOF
