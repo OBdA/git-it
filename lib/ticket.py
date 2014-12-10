@@ -434,7 +434,7 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
         #FIXME: add ticket description as body
         #self.data['body'] = ask_for_multiline_pattern('Describe the ticket:\n')
 
-        self.data['last_modified'] = datetime.datetime.now()
+        self.data['last_modified'] = datetime.datetime.isoformat(datetime.datetime.now())
         return
 
 
