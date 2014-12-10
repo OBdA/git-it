@@ -307,7 +307,7 @@ class NewTicket:
                 'assigned_to': None,
                 'weight': 3,
                 'release': it.UNCATEGORIZED,
-                'body': None,
+                'body': '',
         }
 
         if data is None:
@@ -582,4 +582,7 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
                 (colors.colors[color_field], key, colors.colors['default'], \
                 colors.colors[color_value], value, colors.colors['default'])
             )
-        print("\n%s" % self.data['body'])
+        body = '' if self.data['body'] is None else self.data['body']
+        print("\n%s" % body, newline='')
+
+#EOF
