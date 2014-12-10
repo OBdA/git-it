@@ -30,6 +30,16 @@ DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 #            'body': ('opt',str,12),                        # content (incl. comments?)
 #        }
 
+# For compatibility to ticket format of it version prior 0.3 these fields
+# must be optional:
+# + created
+# + id
+# + last_modified
+# + release
+#
+# The following fields must be configured as alias:
+# + date -> created
+
 # TICKET_FIELDS
 # each ticket field is represented with hash entry which value is another
 # hash, containing one or more of the following fields:
