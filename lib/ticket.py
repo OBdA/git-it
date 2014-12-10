@@ -567,7 +567,7 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
     def print_ticket(self):
         #print(self)
 
-        # sort the ticket fields after the third field
+        # sort the ticket fields with the 'order' field
         fields = [(k,v) for k,v in TICKET_FIELDS.items() if k != 'body']
         fields.sort(key=lambda x: x[1]['order'])
 
