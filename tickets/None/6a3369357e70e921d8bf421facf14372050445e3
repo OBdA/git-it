@@ -7,3 +7,5 @@ Weight: 8
 Status: open
 Assigned to: -
 
++ change title from 'date' to 'created'
++ make visible columnsmore comfortable to configure
