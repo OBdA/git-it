@@ -1,0 +1,40 @@
+# prepare it (2 tests)
+  git init
+>>>=0
+it init
+>>>=0
+
+# import two tickets (6 tests)
+  git checkout git-it
+>>>=0
+  mkdir -p tickets/None
+>>>=0
+  cp -f $RUNPATH/tests/data/02-ticket-0.2 tickets/None/ed679004886003a528206f7d815d5071c8a0cb13
+>>>=0
+  cp -f $RUNPATH/tests/data/02-ticket-0.3 tickets/None/0804930fb9454034c9a0d0c73b542517ee57f5c7
+>>>=0
+  git add .
+>>>=0
+  git commit -m "import two tickets"
+>>>=0
+
+# show old ticket
+it show ed67
+>>>
+Id: ed679004886003a528206f7d815d5071c8a0cb13
+Issuer: Olaf Ohlenmacher <olf@obda.de>
+Created: 2014-10-04 00:09:08
+Type: feature
+Subject: add detailed syntax description to each subcommand
+Priority: 2
+Weight: 6
+Status: open
+Assigned_to: -
+Release: None
+Last_modified: 2014-12-15T18:11:37.734543
+
+Body
+>>>2
+>>>=0
+
+#EOF
