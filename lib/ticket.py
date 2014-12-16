@@ -2,6 +2,8 @@
 
 import os
 import datetime
+import re
+
 import colors
 import math
 import misc
@@ -52,6 +54,7 @@ DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 TICKET_FIELDS = {
         'id':      {'name': 'id',      'required': False, 'type': str, 'order': 1},
         'issuer':  {'name': 'issuer',  'required': True,  'type': str, 'order': 2},
+        'date':    {'name': 'date', 'alias': 'created'},
         'created': {'name': 'created', 'required': True,  'type': datetime.datetime, 'order': 3},
         'type':    {'name': 'type',    'required': True,  'type': str, 'order': 4},
         'subject': {'name': 'subject', 'required': True,  'type': str, 'order': 5},
@@ -470,12 +473,13 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
             if line.find(':') < 0:
                 raise MalformedTicketFieldException, 'Cannot parse field "%s".' % line
             key,val = line.split(':', 1)
-            key = key.lower()
+            # take lower case and replace any 'whitespace' to '_' in key
+            key = re.sub('\s', '_', key.lower())
             val = val.strip()
 
-            # backward compatibilities
-            if key == 'date': key = 'created'
-            elif key == 'assigned to': key = 'assigned_to'
+            # calculate aliases
+            if key in TICKET_FIELDS and 'alias' in TICKET_FIELDS[key]:
+                key = TICKET_FIELDS[key]['alias']
             ticket[key] = val
 
         for field in TICKET_FIELDS:
@@ -488,7 +492,7 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
                 elif datetime.datetime == TICKET_FIELDS[field]['type']:
                     self.data[field] = parse_datetime(ticket[field])
             else:
-                if TICKET_FIELDS[field]['required']:
+                if TICKET_FIELDS[field].get('required'):
                     raise MissingTicketFieldException("Missing field '%s'" % field)
 
         return
@@ -578,7 +582,8 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
         #print(self)
 
         # sort the ticket fields with the 'order' field
-        fields = [(k,v) for k,v in TICKET_FIELDS.items() if k != 'body']
+        fields = [(k,v) for k,v in TICKET_FIELDS.items()
+                if 'alias' not in v and k != 'body']
         fields.sort(key=lambda x: x[1]['order'])
 
         color_field = 'red-on-white'
