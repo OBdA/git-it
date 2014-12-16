@@ -302,8 +302,6 @@ class NewTicket:
     """
 
     def __init__(self, data=None, ticket_id=None, release=None):
-        self.id = None          # is None or str(hexdigest())
-        self.release = None     # is None or str(release)
         self.working_dir = Repo().working_dir
 
         # set default values for the new ticket
@@ -360,11 +358,16 @@ class NewTicket:
         if self.data['release'] is it.UNCATEGORIZED and release is not None:
             self.data['release'] = release
 
-        #FIXME: use self.{id,release} instead of self.data[...]
-        self.id = self.data['id']
-        self.release = self.data['release'] if self.data['release'] != it.UNCATEGORIZED \
-                else None
         return
+
+
+    @property
+    def id(self):
+        return self.data['id']
+
+    @property
+    def release(self):
+        return self.data['release']
 
     def __str__(self):
         return """Id: {id}\nSubject: {subject}\nIssuer: {issuer}
