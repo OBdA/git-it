@@ -162,7 +162,7 @@ to set the email address.
         return
 
     i = Ticket()
-    i.title = ask_for_pattern('Title: ', not_empty)
+    i.data['subject'] = ask_for_pattern('Title: ', not_empty)
 
     type_dict = { 'i': 'issue', 't': 'task', 'f': 'feature', 'b': 'bug' }
     type_string = ask_for_pattern(
@@ -170,29 +170,29 @@ to set the email address.
             lambda x: not_empty(x) and x.strip() in 'bfit',
             default = 'i'
     )
-    i.type = type_dict[type_string]
+    i.data['type'] = type_dict[type_string]
 
     prio_string = ask_for_pattern(
             'Priority [(1)high, (2)medium, (3)low]: ',
             lambda x: x.strip() in '123',
             default='2'
     )
-    i.prio = int(prio_string)
+    i.data['priority'] = int(prio_string)
 
-    i.weight = int(ask_for_pattern(
+    i.data['weight'] = int(ask_for_pattern(
         'Weight [1-27] (1=small, 3=minor, 9=major, 27=super): ',
         lambda x: is_int(x) and 1 <= int(x) <= 27,
         default='3'
     ))
 
-    i.release = ask_for_pattern('Release: ', default=it.UNCATEGORIZED)
+    i.data['release'] = ask_for_pattern('Release: ', default=it.UNCATEGORIZED)
 
     #FIXME: add ticket description as body
-    #i.body = ask_for_multiline_pattern('Describe the ticket:\n')
+    #i.data['body'] = ask_for_multiline_pattern('Describe the ticket:\n')
 
-    i.status = 'open'
-    i.date = datetime.datetime.now()
-    i.issuer = '%s <%s>' % (fullname, email)
+    i.data['status'] = 'open'
+    i.data['created'] = datetime.datetime.now()
+    i.data['issuer'] = '%s <%s>' % (fullname, email)
     return i
 
 def create_from_lines(array_with_lines, id = None, release = None, backward_compatible = False):
@@ -232,24 +232,24 @@ def create_from_lines(array_with_lines, id = None, release = None, backward_comp
             raise MissingTicketFieldException, 'Ticket misses field "%s". Parsed so far: %s' % (required_field, ticket)
 
     # Now, set the ticket fields
-    i.title = ticket['Subject']
-    i.type = ticket['Type']
-    i.issuer = ticket['Issuer']
-    i.date = parse_datetime_string(ticket['Date'])
-    i.body = ticket[None].strip()
-    i.prio = int(ticket['Priority'])
+    i.data['subject'] = ticket['Subject']
+    i.data['type'] = ticket['Type']
+    i.data['issuer'] = ticket['Issuer']
+    i.data['created'] = parse_datetime_string(ticket['Date'])
+    i.data['body'] = ticket[None].strip()
+    i.data['priority'] = int(ticket['Priority'])
     if ticket.has_key('Weight'):  # weight was added later, be backward compatible
-        i.weight = int(ticket['Weight'])
-    i.status = ticket['Status']
-    i.assigned_to = ticket['Assigned to']
+        i.data['weight'] = int(ticket['Weight'])
+    i.data['status'] = ticket['Status']
+    i.data['assigned_to'] = ticket['Assigned to']
 
     # Properties that are not part of the content, but of the location of the file
     # These properties may be overwritten by the caller, else we will use defaults
     if id:
-        i.id = id
+        i.data['id'] = id
 
-    if i.release:
-        i.release = release
+    if i.data['release']:
+        i.data['release'] = release
 
     # Return the new ticket
     return i
@@ -541,7 +541,7 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
             w = col['width']
             id = col['id']
             if id == 'id':
-                colstrings.append(misc.chop(self.id, w))
+                colstrings.append(misc.chop(self.data['id'], w))
             elif id == 'type':
                 colstrings.append(misc.pad_to_length(self.data['type'], w))
             elif id == 'date':

@@ -562,22 +562,22 @@ class Gitit:
     def finish_ticket(self, sha, new_status):
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(fullsha, 7)
-        if i.status not in ['open', 'test']:
-            log.printerr("Ticket '%s' already %s" % (sha7, i.status))
+        if i.data['status'] not in ['open', 'test']:
+            log.printerr("Ticket '%s' already %s" % (sha7, i.data['status']))
             sys.exit(1)
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
         curr_branch = self.repo.active_branch.name
         curr_dir = os.getcwd()
-        msg = "%s ticket '%s'" % (i.status, sha7)
+        msg = "%s ticket '%s'" % (i.data['status'], sha7)
         msg = msg.capitalize()
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
 
         try:
             os.chdir(self.repo.working_dir)
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-            i.status = new_status
+            i.data['status'] = new_status
             i.save()
             self.repo.git.commit(['-m', msg, match])
             print("Ticket '%s' now %s" % (sha7, new_status))
@@ -593,7 +593,7 @@ class Gitit:
     def reopen_ticket(self, sha):
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(fullsha, 7)
-        if i.status == 'open':
+        if i.data['status'] == 'open':
             log.printerr("Ticket '%s' already open" % sha7)
             sys.exit(1)
 
@@ -607,7 +607,7 @@ class Gitit:
         try:
             os.chdir(self.repo.working_dir)
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-            i.status = 'open'
+            i.data['status'] = 'open'
             i.save()
             self.repo.git.commit(['-m', msg, match])
             print(msg)
@@ -623,7 +623,7 @@ class Gitit:
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(fullsha, 7)
         fullname = self.get_cfg('name', section='user', default='Anonymous')
-        if i.assigned_to == fullname:
+        if i.data['assigned_to'] == fullname:
             print("Ticket '%s' already taken by '%s'" % (sha7, fullname))
             return
 
@@ -637,7 +637,7 @@ class Gitit:
         try:
             os.chdir(self.repo.working_dir)
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-            i.assigned_to = fullname
+            i.data['assigned_to'] = fullname
             i.save()
             self.repo.git.commit(['-m', msg, '--', match])
             print(msg)
@@ -655,7 +655,7 @@ class Gitit:
         sha7 = misc.chop(fullsha, 7)
         fullname = self.get_cfg('name', section='user', default='Anonymous')
 
-        if i.assigned_to == '-':
+        if i.data['assigned_to'] == '-':
             print("Ticket '%s' already left alone" % (sha7))
             return
 
@@ -668,7 +668,7 @@ class Gitit:
         try:
             os.chdir(self.repo.working_dir)
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-            i.assigned_to = '-'
+            i.data['assigned_to'] = '-'
             i.save()
             self.repo.git.commit(['-m', msg, match])
             print(msg)
