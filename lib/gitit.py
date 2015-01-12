@@ -3,7 +3,7 @@
 import sys, os, re
 import datetime
 from tempfile import mkstemp
-import misc, log, ticket, colors, it
+import misc, log, ticket, it
 
 from git import *
 
@@ -385,11 +385,11 @@ class Gitit:
 
     def progress_bar(self, percentage_done, width = 32):
         blocks_done = int(percentage_done * 1.0 * width)
-        format_string_done = ('%%-%ds' % blocks_done) % ''
+        # colored: '[' <black-on-green>string_done<default>] '] ' percentage '%'
+        format_string_done = ''.join(['>' for i in range(blocks_done)])
         format_string_togo = ('%%-%ds' % (width - blocks_done)) % ''
-        return '[' + colors.colors['black-on-green'] + format_string_done + \
-                     colors.colors['default'] + format_string_togo + '] %d%%' % \
-                     int(percentage_done * 100)
+        return ''.join(['[', format_string_done, format_string_togo, '] %d%%' \
+                % int(percentage_done * 100)])
 
 
     def __print_ticket_rows(self, rel, tickets, show_types, show_progress_bar, annotate_ownership):
@@ -404,8 +404,8 @@ class Gitit:
 
         total = sum([t.data['weight'] for t in tickets if t.data['status'] != 'rejected']) * 1.0
         done = sum([t.data['weight'] for t in tickets if t.data['status'] not in ['open', 'rejected', 'test']]) * 1.0
-        release_line = colors.colors['red-on-white'] + '%-16s' % rel + \
-                                                                                                         colors.colors['default']
+        # colored: <red-on-white> rel <default>
+        release_line = '%-16s' % rel
 
         # Show a progress bar only when there are items in this release
         if total > 0 and show_progress_bar:
@@ -446,10 +446,8 @@ class Gitit:
                     continue
                 colstrings.append(misc.pad_to_length(col['id'], col['width']))
 
-            print(colors.colors['blue-on-white'] \
-                    + ' '.join(colstrings) \
-                    + colors.colors['default']
-            )
+            # colored: <blue-on-white> ' '.join(colstrings) <default>
+            print(' '.join(colstrings))
 
             for t in tickets_to_print:
                 print_count += 1

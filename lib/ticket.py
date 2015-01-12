@@ -4,7 +4,6 @@ import os
 import datetime
 import re
 
-import colors
 import math
 import misc
 import log
@@ -85,18 +84,18 @@ weight_names = [ 'small', 'minor', 'major', 'super' ]
 #   approx_name = weight_names[min(3,max(0, int(round(math.log(weight, 3)))))]
 
 # Colors
-prio_colors = {
-    'high': 'red-on-white',
-    'med':  'yellow-on-white',
-    'low':  'white'
-}
-status_colors = {
-    'open':     'bold',
-    'test':     'bold',
-    'closed':   'default',
-    'rejected': 'red-on-white',
-    'fixed':    'green-on-white'
-}
+#prio_colors = {
+#    'high': 'red-on-white',
+#    'med':  'yellow-on-white',
+#    'low':  'white'
+#}
+#status_colors = {
+#    'open':     'bold',
+#    'test':     'bold',
+#    'closed':   'default',
+#    'rejected': 'red-on-white',
+#    'fixed':    'green-on-white'
+#}
 
 
 
@@ -559,21 +558,15 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
                         name_suffix)
                 else:
                     title = misc.pad_to_length(misc.chop(title, w, '..'), w)
-                colstrings.append('%s%s%s' % (
-                        colors.colors[status_colors[self.data['status']]],
-                        title,
-                        colors.colors['default']))
+                # colored: <title-color> title <default>
+                colstrings.append(title)
             elif id == 'status':
-                colstrings.append('%s%s%s' % (
-                        colors.colors[status_colors[self.data['status']]],
-                        misc.pad_to_length(self.data['status'], 8),
-                        colors.colors['default']))
+                # colored: <status-color> status:8 <default>
+                colstrings.append(misc.pad_to_length(self.data['status'], 8))
             elif id == 'prio':
                 priostr = priorities[self.data['priority'] -1]
-                colstrings.append('%s%s%s' % (
-                        colors.colors[prio_colors[priostr]],
-                        misc.pad_to_length(priostr, 4),
-                        colors.colors['default']))
+                # colored: <prio-color> prio:4 <default>
+                colstrings.append(misc.pad_to_length(priostr, 4))
             elif id == 'wght':
                 weightstr = weight_names[min(3,
                     max(0, int(round(math.log(self.data['weight'], 3)))))]
@@ -589,17 +582,12 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
                 if 'alias' not in v and k != 'body']
         fields.sort(key=lambda x: x[1]['order'])
 
-        color_field = 'red-on-white'
-        color_value = 'default'
-
         for field in fields:
             k,v = field
             key = v['visual'] if 'visual' in field else v['name'].capitalize()
             value = self.data[k]
-            print("%s%s:%s %s%s%s" %
-                (colors.colors[color_field], key, colors.colors['default'], \
-                colors.colors[color_value], value, colors.colors['default'])
-            )
+            # colored: <red-on-white> key <default> <default> value <default>
+            print("%s: %s" % (key, value))
         body = '' if self.data['body'] is None else self.data['body']
         print("\n%s" % body)
 
