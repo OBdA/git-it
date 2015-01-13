@@ -585,7 +585,9 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
         fields.sort(key=lambda x: x[1]['order'])
 
         for field in fields:
+            # skip all values not defined for this ticket
             k,v = field
+            if k not in self.data: continue
             key = v['visual'] if 'visual' in field else v['name'].capitalize()
             value = self.data[k]
             # colored: <red-on-white> key <default> <default> value <default>
