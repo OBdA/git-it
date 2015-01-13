@@ -311,7 +311,7 @@ class NewTicket:
                 'subject': None,
                 'issuer': None,
                 'created': now,
-                'last_modified': now,
+                # do not set a default for 'last_modified'
                 'priority': 3,
                 'status': 'open',
                 'assigned_to': None,
@@ -449,9 +449,11 @@ Status: {status}\nAssigned to: {assigned_to}\nRelease: {release}
         #FIXME: add ticket description as body
         #self.data['body'] = ask_for_multiline_pattern('Describe the ticket:\n')
 
-        self.data['last_modified'] = datetime.datetime.isoformat(datetime.datetime.now())
+        self.update_last_modified()
         return
 
+    def update_last_modified(self):
+        self.data['last_modified'] = datetime.datetime.isoformat(datetime.datetime.now())
 
     def read_file(self, fd):
         self._from_lines(fd.readlines())
