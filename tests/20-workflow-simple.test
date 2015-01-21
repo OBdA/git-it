@@ -1,0 +1,39 @@
+# prepare it (2 tests)
+  git init
+>>>=0
+it init
+>>>=0
+
+# add a ticket
+it new > ,new
+<<<
+new ticket
+feature
+2
+8
+1.0
+>>>=0
+
+# get new ticket id
+  cat ,new |sed -r "s/.*'(.*)'.*/\1/" > ,ticket-sha7
+>>>=0
+
+# check ticket title (fixed by bc8861b)
+it show $(cat ,ticket-sha7)
+>>>/^Subject: new ticket$/
+>>>=0
+
+# setup EDITOR to add a body text
+  git config core.editor "sed -i -f $PKGPATH/tests/data/20-edit-cmd.sed"
+>>>=0
+
+# edit the ticket
+it edit $(cat ,ticket-sha7)
+>>>=0
+
+# check for the new body
+it show $(cat ,ticket-sha7)
+>>>/^The Body\.$/
+>>>=0
+
+#EOF
