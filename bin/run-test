@@ -20,6 +20,9 @@ SCRIPTPATH=$(readlink -e $0)
 EXECPATH=${SCRIPTPATH%/*}
 IT=$EXECPATH/it
 
+PKGPATH=${EXECPATH%/*}
+export PKGPATH
+
 # save actual directory
 RUNPATH=$(readlink -e $PWD)
 export RUNPATH
