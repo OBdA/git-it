@@ -211,6 +211,9 @@ class Gitit:
 
         # Save the contents of this ticket to a file, so it can be edited
         fd, filename = mkstemp(prefix='git-it.')
+        # update last_modified now, because later we have to edit the ticket
+        # file itself
+        i.update_last_modified()
         i.save(filename)
         timestamp1 = os.path.getmtime(filename)
         success = os.system(
