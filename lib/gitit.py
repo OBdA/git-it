@@ -216,8 +216,9 @@ class Gitit:
         i.update_last_modified()
         i.save(filename)
         timestamp1 = os.path.getmtime(filename)
+        edit_cmd = self.get_cfg('editor', default='vim') + ' "%s"'
         success = os.system(
-                self.get_cfg('editor', default='vim') + ' "%s"' % filename
+                edit_cmd % filename
         ) == 0
         timestamp2 = os.path.getmtime(filename)
         if not success:
