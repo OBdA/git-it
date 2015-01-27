@@ -7,3 +7,10 @@ Weight: 4
 Status: open
 Assigned to: -
 
+'it' does not return return values. Therefore there is no posibillity
+to check for errors.
+
+Use 
+  rc = 0    success
+  rc = 1    failure or error
+  rc = 2    partial success or warning
