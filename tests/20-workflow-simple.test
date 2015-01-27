@@ -4,7 +4,7 @@
 it init
 >>>=0
 
-# add a ticket
+#03: add a ticket
 it new > ,new
 <<<
 new ticket
@@ -18,7 +18,7 @@ feature
   cat ,new |sed -r "s/.*'(.*)'.*/\1/" > ,ticket-sha7
 >>>=0
 
-# check ticket title (fixed by bc8861b)
+#05: check ticket title (fixed by bc8861b)
 it show $(cat ,ticket-sha7)
 >>>/^Subject: new ticket$/
 >>>=0
@@ -27,11 +27,11 @@ it show $(cat ,ticket-sha7)
   git config core.editor "sed -i -f $PKGPATH/tests/data/20-edit-cmd.sed"
 >>>=0
 
-# edit the ticket
+#07: edit the ticket
 it edit $(cat ,ticket-sha7)
 >>>=0
 
-# check for the new body
+#08: check for the new body
 it show $(cat ,ticket-sha7)
 >>>/^The Body\.$/
 >>>=0
