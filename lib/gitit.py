@@ -288,6 +288,7 @@ class Gitit:
         curr_branch = self.repo.active_branch.name
         msg = "Moved ticket '%s' (%s --> %s)" % (sha7, rel, to_rel)
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
+        rc = 0  # our return value
         try:
             # Commit the new itdb to the repo
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
@@ -303,13 +304,16 @@ class Gitit:
         except OSError as e:
             log.printerr("Could not move ticket '%s' to '%s':" % (sha7, to_rel))
             log.printerr(e)
+            rc = 1
         except Exception:
             log.printerr("Could not move ticket '%s' to '%s':" % (sha7, to_rel))
-
+            rc = 1
         finally:
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
             self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
             misc.rmdirs(abs_ticket_dir)
+
+        return rc
 
 
     def show(self, sha):
