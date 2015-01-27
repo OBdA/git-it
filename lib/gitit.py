@@ -292,6 +292,7 @@ class Gitit:
             # Commit the new itdb to the repo
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
 
+            i.data['release'] = to_rel
             i.save(target_path)
             if os.path.isfile(src_path):
                 os.remove(src_path)
