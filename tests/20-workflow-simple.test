@@ -36,4 +36,39 @@ it show $(cat ,ticket-sha7)
 >>>/^The Body\.$/
 >>>=0
 
+# take the ticket as "Mark Bench <bench@mark.org>"
+  git config user.name "Mark Bench"
+>>>=0
+  git config user.email "bench@mark.org"
+>>>=0
+
+#11: take this ticket
+it take $(cat ,ticket-sha7)
+>>>=0
+
+#12: check for the new body
+it show $(cat ,ticket-sha7)
+>>>/^Assigned_to: Mark Bench$/
+>>>=0
+
+#13: leave this ticket
+it leave $(cat ,ticket-sha7)
+>>>=0
+
+#14: check for the new body
+it show $(cat ,ticket-sha7)
+>>>/^Assigned_to: -$/
+>>>=0
+
+#15: move the ticket to the new release 'sometime'
+it mv $(cat ,ticket-sha7) sometime
+>>>2
+>>>=0
+
+#14: check for the new body
+it show $(cat ,ticket-sha7) | grep Release
+>>>/^Release: sometime$/
+>>>=0
+
+
 #EOF
