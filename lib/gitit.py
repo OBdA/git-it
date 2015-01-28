@@ -405,11 +405,19 @@ class Gitit:
         print_count = 0
 
         # Get the available terminal drawing space
+        width = 80
         try:
             width, _ = os.get_terminal_size()
-        except Exception:
-            _, width = os.popen('stty size').read().strip().split()
-            width = int(width)
+        except Exception as e:
+            #logging.warning("os.get_terminal_size failed: %s", e)
+            print("os.get_terminal_size failed: %s" % e)
+            try:
+                _, width = os.popen('stty size').read().strip().split()
+                width = int(width)
+            except ValueError as e:
+                #logging.error("Can not get the available width -- take %d", width)
+                print("Can not get the available width -- take %d" % width)
+                pass
 
         total = sum([t.data['weight'] for t in tickets if t.data['status'] != 'rejected']) * 1.0
         done = sum([t.data['weight'] for t in tickets if t.data['status'] not in ['open', 'rejected', 'test']]) * 1.0
