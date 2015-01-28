@@ -35,7 +35,7 @@ ${QUIET:+:} printf 'Using "%s" as test directory.\n' $TESTBASE
 trap "${DEBUG:+:} rm -rf $TESTBASE" 0
 
 # run the test
-( cd $TESTBASE && shelltest -w "$IT" "$TEST" ${QUIET:+-- --hide-successes} )
+( cd $TESTBASE && shelltest ${DEBUG:+-a} -w "$IT" "$TEST" ${QUIET:+-- --hide-successes} )
 
 exit 0
 #EOF
