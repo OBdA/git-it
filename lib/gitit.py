@@ -3,7 +3,7 @@
 import sys, os, re
 import datetime
 from tempfile import mkstemp
-import misc, log, ticket, colors, it
+import misc, log, ticket, it
 
 from git import *
 
@@ -19,25 +19,11 @@ except ImportError:
     sha1_constructor = sha.new
 
 
-def cmp_by_prio(t1, t2):
-    return cmp(t1.prio, t2.prio)
-
-
-def cmp_by_date(t1, t2):
-    if t1.date < t2.date:
-        return -1
-    elif t1.date > t2.date:
-        return 1
-    else:
-        return 0
-
-
 def cmp_by_prio_then_date(ticket1, ticket2):
-    v = cmp_by_prio(ticket1, ticket2)
+    v = ticket1.cmp_by(ticket2, 'priority')
     if v == 0:
-        return cmp_by_date(ticket1, ticket2)
-    else:
-        return v
+        v =  ticket1.cmp_by(ticket2, 'created')
+    return v
 
 
 def versionCmp(strx, stry):
@@ -225,10 +211,14 @@ class Gitit:
 
         # Save the contents of this ticket to a file, so it can be edited
         fd, filename = mkstemp(prefix='git-it.')
+        # update last_modified now, because later we have to edit the ticket
+        # file itself
+        i.update_last_modified()
         i.save(filename)
         timestamp1 = os.path.getmtime(filename)
+        edit_cmd = self.get_cfg('editor', default='vim') + ' "%s"'
         success = os.system(
-                self.get_cfg('editor', default='vim') + ' "%s"' % filename
+                edit_cmd % filename
         ) == 0
         timestamp2 = os.path.getmtime(filename)
         if not success:
@@ -242,13 +232,19 @@ class Gitit:
             return
 
         try:
-            i = ticket.create_from_file(filename, fullsha, rel)
+            with open(filename) as fd:
+                i = ticket.NewTicket(fd)
+
         except ticket.MalformedTicketFieldException as e:
             log.printerr("Error parsing ticket: %s" % e)
             sys.exit(1)
         except ticket.MissingTicketFieldException as e:
             log.printerr("Error parsing ticket: %s" % e)
             sys.exit(1)
+
+        # compatibility with git-it <= 0.2
+        i.set_default('id', fullsha)
+        i.set_default('release', rel)
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
@@ -258,10 +254,10 @@ class Gitit:
         try:
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
             i.save()
-            self.repo.git.commit(['-m', msg, i.filename()])
+            self.repo.git.commit(['-m', msg, i.filename])
             print("Ticket '%s' edited succesfully" % sha7)
-        except Exception:
-            log.printerr("Error commiting modified ticket.")
+        except Exception as ex:
+            raise RuntimeError("Error commiting modified ticket: %s", ex)
 
         finally:
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
@@ -292,10 +288,12 @@ class Gitit:
         curr_branch = self.repo.active_branch.name
         msg = "Moved ticket '%s' (%s --> %s)" % (sha7, rel, to_rel)
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
+        rc = 0  # our return value
         try:
             # Commit the new itdb to the repo
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
 
+            i.data['release'] = to_rel
             i.save(target_path)
             if os.path.isfile(src_path):
                 os.remove(src_path)
@@ -306,18 +304,21 @@ class Gitit:
         except OSError as e:
             log.printerr("Could not move ticket '%s' to '%s':" % (sha7, to_rel))
             log.printerr(e)
+            rc = 1
         except Exception:
             log.printerr("Could not move ticket '%s' to '%s':" % (sha7, to_rel))
-
+            rc = 1
         finally:
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
             self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
             misc.rmdirs(abs_ticket_dir)
 
+        return rc
+
 
     def show(self, sha):
-        i, _, fullsha, _ = self.get_ticket(sha)
-        i.print_ticket(fullsha)
+        i, _, _, _ = self.get_ticket(sha)
+        i.print_ticket()
 
 
     def sync(self):
@@ -359,39 +360,32 @@ class Gitit:
 
         # Create a fresh ticket
         try:
-            i = ticket.create_interactive(self._gitcfg)
+            i = ticket.NewTicket()
         except KeyboardInterrupt:
             print('')
             print("Aborting new ticket.")
             return None
 
-        # Generate a SHA1 id
-        s = sha1_constructor()
-        s.update(i.__str__())
-        s.update(os.getlogin())
-        s.update(datetime.datetime.now().__str__())
-        i.id = ticketname = s.hexdigest()
-
         # Save the ticket to disk
         i.save()
-        sha7 = misc.chop(ticketname, 7)
+        sha7 = misc.chop(i.data['id'], 7)
         print("New ticket '%s' saved" % sha7)
 
-        # Commit the new ticket to the 'aaa' branch
+        # Commit the new ticket to the 'git-it' branch
         curr_branch = self.repo.active_branch.name
-        msg = "%s added ticket '%s'" % (i.issuer, sha7)
+        msg = "%s added ticket '%s'" % (i.data['issuer'], sha7)
         msg = msg.capitalize()
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
 
         try:
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-            self.repo.git.add([i.filename()])
-            self.repo.git.commit(['-m', msg, i.filename()])
+            self.repo.git.add([i.filename])
+            self.repo.git.commit(['-m', msg, i.filename])
         except:
             log.printerr("Error commiting changes to ticket '%s'" % sha7)
         finally:
-            os.remove(i.filename())
-            self.repo.git.rm(['--cached', i.filename()])
+            os.remove(i.filename)
+            self.repo.git.rm(['--cached', i.filename])
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+curr_branch])
             self.repo.git.reset(['HEAD', '--', abs_ticket_dir])
             misc.rmdirs(abs_ticket_dir)
@@ -400,27 +394,35 @@ class Gitit:
 
     def progress_bar(self, percentage_done, width = 32):
         blocks_done = int(percentage_done * 1.0 * width)
-        format_string_done = ('%%-%ds' % blocks_done) % ''
+        # colored: '[' <black-on-green>string_done<default>] '] ' percentage '%'
+        format_string_done = ''.join(['>' for i in range(blocks_done)])
         format_string_togo = ('%%-%ds' % (width - blocks_done)) % ''
-        return '[' + colors.colors['black-on-green'] + format_string_done + \
-                     colors.colors['default'] + format_string_togo + '] %d%%' % \
-                     int(percentage_done * 100)
+        return ''.join(['[', format_string_done, format_string_togo, '] %d%%' \
+                % int(percentage_done * 100)])
 
 
     def __print_ticket_rows(self, rel, tickets, show_types, show_progress_bar, annotate_ownership):
         print_count = 0
 
         # Get the available terminal drawing space
+        width = 80
         try:
             width, _ = os.get_terminal_size()
-        except Exception:
-            _, width = os.popen('stty size').read().strip().split()
-            width = int(width)
+        except Exception as e:
+            #logging.warning("os.get_terminal_size failed: %s", e)
+            print("os.get_terminal_size failed: %s" % e)
+            try:
+                _, width = os.popen('stty size').read().strip().split()
+                width = int(width)
+            except ValueError as e:
+                #logging.error("Can not get the available width -- take %d", width)
+                print("Can not get the available width -- take %d" % width)
+                pass
 
-        total = sum([t.weight for t in tickets if t.status != 'rejected']) * 1.0
-        done = sum([t.weight for t in tickets if t.status not in ['open', 'rejected', 'test']]) * 1.0
-        release_line = colors.colors['red-on-white'] + '%-16s' % rel + \
-                                                                                                         colors.colors['default']
+        total = sum([t.data['weight'] for t in tickets if t.data['status'] != 'rejected']) * 1.0
+        done = sum([t.data['weight'] for t in tickets if t.data['status'] not in ['open', 'rejected', 'test']]) * 1.0
+        # colored: <red-on-white> rel <default>
+        release_line = '%-16s' % rel
 
         # Show a progress bar only when there are items in this release
         if total > 0 and show_progress_bar:
@@ -429,7 +431,7 @@ class Gitit:
             header = release_line
 
         # First, filter all types that do not need to be shown out of the list
-        tickets_to_print = filter(lambda t: t.status in show_types, tickets)
+        tickets_to_print = filter(lambda t: t.data['status'] in show_types, tickets)
         if len(tickets_to_print) > 0:
             print(header)
 
@@ -461,10 +463,8 @@ class Gitit:
                     continue
                 colstrings.append(misc.pad_to_length(col['id'], col['width']))
 
-            print(colors.colors['blue-on-white'] \
-                    + ' '.join(colstrings) \
-                    + colors.colors['default']
-            )
+            # colored: <blue-on-white> ' '.join(colstrings) <default>
+            print(' '.join(colstrings))
 
             for t in tickets_to_print:
                 print_count += 1
@@ -508,16 +508,17 @@ class Gitit:
                 rel_tree = rel_tree[dir]
             ticketfiles = [(x.mode, x.type, x.hexsha, x.name) for x in rel_tree.blobs]
 
-            tickets = [ ticket.create_from_lines(\
-                        self.repo.git.cat_file(['-p', sha]).split("\n"), \
-                        ticket_id, rel, True) \
-                    for _, type, sha, ticket_id in ticketfiles \
-                    if type == 'blob' and ticket_id != it.HOLD_FILE \
+            #FIXME: do not use 'ticket_id' and 'release' in ticket constructor
+            #       Backward compatibility only!
+            tickets = [ ticket.NewTicket(
+                    self.repo.git.cat_file(['-p', sha]).split("\n"),
+                    ticket_id=ticket_id, release=rel
+                ) for _, type, sha, ticket_id in ticketfiles \
+                if type == 'blob' and ticket_id != it.HOLD_FILE \
             ]
 
-
             # Store the tickets in the inbox if neccessary
-            inbox += filter(lambda t: t.is_mine(fullname), tickets)
+            inbox += filter(lambda t: t.is_assigned_to(fullname), tickets)
 
             print_count += self.__print_ticket_rows(rel, tickets, show_types, True, True)
 
@@ -568,29 +569,30 @@ class Gitit:
         rel = os.path.basename(parent)
 
         contents = self.repo.git.cat_file(['-p', it.ITDB_BRANCH + ':' + match])
-        i = ticket.create_from_lines(contents.split("\n"), fullsha, rel, True)
-        return (i, rel, fullsha, match)
+        i = ticket.NewTicket(contents.split("\n"), ticket_id=fullsha, release=rel)
+        #FIXME: do only return the ticket, not a tuple of ticket particles
+        return (i, i.data['release'], i.data['id'], match)
 
 
     def finish_ticket(self, sha, new_status):
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(fullsha, 7)
-        if i.status not in ['open', 'test']:
-            log.printerr("Ticket '%s' already %s" % (sha7, i.status))
+        if i.data['status'] not in ['open', 'test']:
+            log.printerr("Ticket '%s' already %s" % (sha7, i.data['status']))
             sys.exit(1)
 
         # Now, when the edit has succesfully taken place, switch branches, commit,
         # and switch back
         curr_branch = self.repo.active_branch.name
         curr_dir = os.getcwd()
-        msg = "%s ticket '%s'" % (i.status, sha7)
+        msg = "%s ticket '%s'" % (i.data['status'], sha7)
         msg = msg.capitalize()
         abs_ticket_dir = os.path.join(self.repo.working_dir, it.TICKET_DIR)
 
         try:
             os.chdir(self.repo.working_dir)
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-            i.status = new_status
+            i.data['status'] = new_status
             i.save()
             self.repo.git.commit(['-m', msg, match])
             print("Ticket '%s' now %s" % (sha7, new_status))
@@ -606,7 +608,7 @@ class Gitit:
     def reopen_ticket(self, sha):
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(fullsha, 7)
-        if i.status == 'open':
+        if i.data['status'] == 'open':
             log.printerr("Ticket '%s' already open" % sha7)
             sys.exit(1)
 
@@ -620,7 +622,7 @@ class Gitit:
         try:
             os.chdir(self.repo.working_dir)
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-            i.status = 'open'
+            i.data['status'] = 'open'
             i.save()
             self.repo.git.commit(['-m', msg, match])
             print(msg)
@@ -636,7 +638,7 @@ class Gitit:
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(fullsha, 7)
         fullname = self.get_cfg('name', section='user', default='Anonymous')
-        if i.assigned_to == fullname:
+        if i.data['assigned_to'] == fullname:
             print("Ticket '%s' already taken by '%s'" % (sha7, fullname))
             return
 
@@ -650,7 +652,7 @@ class Gitit:
         try:
             os.chdir(self.repo.working_dir)
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-            i.assigned_to = fullname
+            i.data['assigned_to'] = fullname
             i.save()
             self.repo.git.commit(['-m', msg, '--', match])
             print(msg)
@@ -668,7 +670,7 @@ class Gitit:
         sha7 = misc.chop(fullsha, 7)
         fullname = self.get_cfg('name', section='user', default='Anonymous')
 
-        if i.assigned_to == '-':
+        if i.data['assigned_to'] == '-':
             print("Ticket '%s' already left alone" % (sha7))
             return
 
@@ -681,7 +683,7 @@ class Gitit:
         try:
             os.chdir(self.repo.working_dir)
             self.repo.git.symbolic_ref(['HEAD', 'refs/heads/'+it.ITDB_BRANCH])
-            i.assigned_to = '-'
+            i.data['assigned_to'] = '-'
             i.save()
             self.repo.git.commit(['-m', msg, match])
             print(msg)
