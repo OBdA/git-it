@@ -7,3 +7,6 @@ Weight: 6
 Status: open
 Assigned to: -
 
++ get size of terminal from python3
+  - Do not use os.get_terminal_size() 
+  - Do not open a shell (via popen ..)
