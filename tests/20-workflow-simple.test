@@ -46,7 +46,7 @@ it show $(cat ,ticket-sha7)
 it take $(cat ,ticket-sha7)
 >>>=0
 
-#12: check for the new body
+#12: check for assigned person
 it show $(cat ,ticket-sha7)
 >>>/^Assigned_to: Mark Bench$/
 >>>=0
@@ -55,7 +55,7 @@ it show $(cat ,ticket-sha7)
 it leave $(cat ,ticket-sha7)
 >>>=0
 
-#14: check for the new body
+#14: check for the assignee
 it show $(cat ,ticket-sha7)
 >>>/^Assigned_to: -$/
 >>>=0
