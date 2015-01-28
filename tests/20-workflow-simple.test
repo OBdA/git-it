@@ -65,10 +65,75 @@ it mv $(cat ,ticket-sha7) sometime
 >>>2
 >>>=0
 
-#14: check for the new body
+#16: check for the new body
 it show $(cat ,ticket-sha7) | grep Release
 >>>/^Release: sometime$/
 >>>=0
 
+#17: test 'list' command for new ticket
+#it list
+it list | grep "$(cat ,ticket-sha7)"
+>>>/^[0-9a-f][0-9a-f]+ *feature *new ticket *major *open /
+>>>=0
+
+#18: change status to reject
+it reject "$(cat ,ticket-sha7)"
+>>>=0
+
+#19: check for status change
+it show $(cat ,ticket-sha7) | grep Status:
+>>>
+Status: rejected
+>>>=0
+
+#20: change status to reopen
+it reopen "$(cat ,ticket-sha7)"
+>>>=0
+
+#21: check for status change
+it show $(cat ,ticket-sha7) | grep Status:
+>>>
+Status: open
+>>>=0
+
+#22: change status to test
+it test "$(cat ,ticket-sha7)"
+>>>=0
+
+#23: check for status change
+it show $(cat ,ticket-sha7) | grep Status:
+>>>
+Status: test
+>>>=0
+
+#24: change status to fix
+it fix "$(cat ,ticket-sha7)"
+>>>=0
+
+#25: check for status change
+it show $(cat ,ticket-sha7) | grep Status:
+>>>
+Status: fixed
+>>>=0
+
+#26: change status to reopen
+it reopen "$(cat ,ticket-sha7)"
+>>>=0
+
+#27: check for status change
+it show $(cat ,ticket-sha7) | grep Status:
+>>>
+Status: open
+>>>=0
+
+#28: change status to close
+it close "$(cat ,ticket-sha7)"
+>>>=0
+
+#29: check for status change
+it show $(cat ,ticket-sha7) | grep Status:
+>>>
+Status: closed
+>>>=0
 
 #EOF
