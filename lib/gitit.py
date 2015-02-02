@@ -193,7 +193,7 @@ class Gitit:
                 matches.append(path)
 
         if len(matches) == 0:
-            log.printerr("No such ticket")
+            log.printerr("No such ticket.")
             sys.exit(1)
         elif len(matches) > 1:
             log.printerr("Ambiguous match criteria. The following tickets match:")
