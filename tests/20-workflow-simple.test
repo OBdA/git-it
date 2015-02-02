@@ -136,4 +136,17 @@ it show $(cat ,ticket-sha7) | grep Status:
 Status: closed
 >>>=0
 
+#30: remove ticket
+echo | it rm -f  $(cat ,ticket-sha7)
+>>>/^ticket.*removed$/
+>>>=0
+
+#31: check ticket is removed
+it show $(cat ,ticket-sha7)
+>>>
+>>>2
+No such ticket.
+>>>=1
+
+
 #EOF
