@@ -1,5 +1,6 @@
 #vim: syntax=python fileencoding=utf-8 tabstop=4 expandtab shiftwidth=4
 
+from __future__ import print_function
 import sys, os, re
 import datetime
 from tempfile import mkstemp
@@ -410,13 +411,13 @@ class Gitit:
             width, _ = os.get_terminal_size()
         except Exception as e:
             #logging.warning("os.get_terminal_size failed: %s", e)
-            print("os.get_terminal_size failed: %s" % e)
+            print("os.get_terminal_size failed: %s" % e, file=sys.stderr)
             try:
                 _, width = os.popen('stty size').read().strip().split()
                 width = int(width)
             except ValueError as e:
                 #logging.error("Can not get the available width -- take %d", width)
-                print("Can not get the available width -- take %d" % width)
+                print("Can not get the available width -- take %d" % width, file=sys.stderr)
                 pass
 
         total = sum([t.data['weight'] for t in tickets if t.data['status'] != 'rejected']) * 1.0
