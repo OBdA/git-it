@@ -44,6 +44,7 @@ it show $(cat ,ticket-sha7)
 
 #11: take this ticket
 it take $(cat ,ticket-sha7)
+>>>2
 >>>=0
 
 #12: check for assigned person
