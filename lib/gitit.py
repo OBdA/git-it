@@ -373,6 +373,10 @@ class Gitit:
             print("Aborting new ticket.")
             return None
 
+        # check for name
+        if i.data['issuer'] is None:
+            i.data['issuer'] = self.get_author()
+
         # Save the ticket to disk
         i.save()
         sha7 = misc.chop(i.data['id'], 7)
