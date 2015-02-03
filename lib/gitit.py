@@ -84,6 +84,14 @@ class Gitit:
         self._gitcfg = self.repo.config_reader()
 
 
+    def get_author(self, default='Anonymous'):
+        try:
+            author = Actor.author(config_reader=self._gitcfg).name
+        except Exception as e:
+            log.printerr('Can not read author name: %s' % e)
+            author = default
+        return author
+
     def get_cfg(self, key, section='core', default=None):
         value = default
         try:
@@ -500,7 +508,7 @@ class Gitit:
 
         print_count = 0
         releasedirs.sort(cmp_by_release_dir)
-        fullname = self.get_cfg('name', section='user', default='Anonymous')
+        fullname = self.get_author(default='Anonymous')
         for _, _, sha, rel in releasedirs:
             rel_tree = self.repo.heads[it.ITDB_BRANCH].commit.tree[it.TICKET_DIR]
             for dir in rel.split('/'):
@@ -636,7 +644,7 @@ class Gitit:
     def take_ticket(self, sha):
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(fullsha, 7)
-        fullname = self.get_cfg('name', section='user', default='Anonymous')
+        fullname = self.get_author(default='Anonymous')
         if i.data['assigned_to'] == fullname:
             print("Ticket '%s' already taken by '%s'" % (sha7, fullname))
             return
@@ -667,7 +675,7 @@ class Gitit:
     def leave_ticket(self, sha):
         i, _, fullsha, match = self.get_ticket(sha)
         sha7 = misc.chop(fullsha, 7)
-        fullname = self.get_cfg('name', section='user', default='Anonymous')
+        fullname = self.get_author(default='Anonymous')
 
         if i.data['assigned_to'] == '-':
             print("Ticket '%s' already left alone" % (sha7))
