@@ -314,7 +314,7 @@ class NewTicket:
                 # do not set a default for 'last_modified'
                 'priority': 3,
                 'status': 'open',
-                'assigned_to': None,
+                'assigned_to': '-',
                 'weight': 3,
                 'release': it.UNCATEGORIZED,
                 'body': '',
