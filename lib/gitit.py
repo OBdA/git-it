@@ -88,11 +88,9 @@ class Gitit:
         value = default
         try:
             value = self._gitcfg.get(section, key)
-        except NoSectionError as e:
-            log.printerr("%s: No such git config section: %s" % (section, e))
+        except Exception as e:
+            log.printerr("%s: No such git config: %s" % (section, e))
 
-        except NoOptionError:
-            log.printerr("%s: No such key in git config section '%s': %s" % (key, section, e))
         return value
 
 
